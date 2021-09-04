@@ -1,8 +1,10 @@
 // import * as fs from 'fs'
-import * as FileSystem from 'expo-file-system';
+// import * as FileSystem from 'expo-file-system';
+// var RNFS = require('react-native-fs');
 import {encode, decode, bounds, adjacent, neighbours} from './GeohashingVeness.js'
 import { geohashQueryBounds } from 'geofire-common'
 import bigJSON from './cycleparking.json'
+import newJSON from './cycleparking_format_test.json'
 
 class CycleParking{
 
@@ -19,6 +21,7 @@ class CycleParking{
      */
     this.data = {}
     this.data = bigJSON
+    this.data_new = newJSON
     this.geohashes_created = false
 
     /**
@@ -28,7 +31,7 @@ class CycleParking{
 
     // init with default data. The geohash references are not built until this is done
     this.getData()
-    this.addGeohashesToData()
+    // this.addGeohashesToData()
 
   }
 
@@ -50,15 +53,15 @@ class CycleParking{
   // getter
   getData = () => {
     const keys = Object.keys(this.data)
-    console.log(`getData(): this.data has ${keys.length} keys`)
-    console.log(`getData(): first key: ${keys[0]} last key: ${keys[keys.length-1]}`)
-    console.log(`getData(): this.data[ ${keys[0]} ]: ${JSON.stringify(this.data[ keys[0] ])}`)
+    // if(this.debug) console.log(`getData(): this.data has ${keys.length} keys`)
+    // if(this.debug) console.log(`getData(): first key: ${keys[0]} last key: ${keys[keys.length-1]}`)
+    // if(this.debug) console.log(`getData(): this.data[ ${keys[0]} ]: ${JSON.stringify(this.data[ keys[0] ])}`)
     if(Object.keys(this.data).length === 0){
-      const file_content = FileSystem.readAsStringAsync( this.default_data_file, {encoding: 'utf8'} )
-      // const file_content = fs.readFileSync( this.default_data_file, {encoding:'utf-8'} )
-      const file_object = JSON.parse( file_content )
-      if(!file_object) throw new Error(`Could not read content of default_data_file ${this.default_data_file}`)
-      this.setData( file_object )
+      // const file_content = FileSystem.readAsStringAsync( this.default_data_file, {encoding: 'utf8'} )
+      // // const file_content = fs.readFileSync( this.default_data_file, {encoding:'utf-8'} )
+      // const file_object = JSON.parse( file_content )
+      // if(!file_object) throw new Error(`Could not read content of default_data_file ${this.default_data_file}`)
+      // this.setData( file_object )
     }
     return this.data;
   }
@@ -73,6 +76,58 @@ class CycleParking{
     this.getData()[ place_id ]
   } 
 
+  getCycleParksInRange = ( lat, lon, radius_in_metres ) => {
+    return new Promise((resolve,reject)=>{
+      
+      const places = []
+
+      // get the start/end bounds that this circle overlaps
+      // this is from 'geofire-common', you can see it here: https://cdn.jsdelivr.net/npm/geofire-common@5.2.0/dist/geofire-common/index.js
+      const bounds = geohashQueryBounds([lat, lon], radius_in_metres);
+
+      // for each of these bounds
+      for (let i = 0, l = bounds.length; i < l; i++) {
+        const [start, end] = bounds[i];
+
+        // get the first 7 chars, it's approx 150sq metres
+        const start_7 = start.substr(0,7) // ≤ 153m 	× 	153m
+        
+        // for every geohash in our data
+        for(let geohash in this.data_new){
+
+          // if the first seven chars match, check that the places it contains fall between
+          // the start and end
+          if(
+            geohash > start
+            && geohash < end
+          ){
+
+            // for each of these places, check the _actual_ point distance
+            // geohashes are square 'blocks' so if the circle overlaps the corner
+            // of a block it might be included despite being out of range of the circle
+
+            const places_in_block = this.data_new[ geohash ]
+            for (let ii = 0, ll = places_in_block.length; ii < ll; ii++) {
+              const place = places_in_block[ ii ]
+              const dist_from_centre = this.getDistBetweenTwoPoints([lat, lon] , [place.lat, place.lon])
+              
+              // skip it if we're outside of the circle
+              if(dist_from_centre > radius_in_metres) continue
+
+              // otherwise collect it!
+              places.push(place)
+            }
+            
+
+          }
+        }
+      }
+
+      // come to think of it nothing in this function is synchronous any more so can probs remove promises
+      resolve(places)
+
+    })
+  }
 
   /**
    * resolves with an array of places
@@ -81,7 +136,7 @@ class CycleParking{
    * @param {number} radius_in_metres 
    * @returns {Promise} 
    */
-  getCycleParksInRange = ( lat, lon, radius_in_metres ) => {
+   Z_getCycleParksInRange = ( lat, lon, radius_in_metres ) => {
     return new Promise((resolve,reject)=>{
       
       const places = []
@@ -130,25 +185,58 @@ class CycleParking{
    * @returns 
    */
   getPlaceKeysInGeohashBounds = (start, end) => {
-    start = start.replace('~', '')
-    end = end.replace('~', '')
     const start_4 = start.substr(0, 4)
-    
+
     const found_keys = []
-    for (const top_level_key in this.geohash_reference) {
-      if (
-        top_level_key.indexOf(start_4) === 0
-      ) {
-        for (const second_level_key in this.geohash_reference[top_level_key]) {
-          if(
-            second_level_key >= start
-            && second_level_key <= end
-          ){
-            found_keys.push( ...this.geohash_reference[top_level_key][second_level_key] )
-          }
+
+    for (const place_id in this.getData()) {
+      if(this.getData().hasOwnProperty( place_id )){
+        const this_place = this.getData()[ place_id ]
+        
+        const lat = this.getData()[ place_id ]['lat']
+        const lon = this.getData()[ place_id ]['lon']
+        let geoHash
+
+        if(!this_place.geohash){
+          geoHash = encode( lat, lon, 9 )
+          this.getData()[ place_id ]['geohash'] = geoHash
+        }else{
+          geoHash = this.getData()[ place_id ]['geohash']
         }
+
+        if(geoHash.indexOf( start_4 ) != 0){
+          continue
+        }
+
+        console.log(`start: ${start} end: ${end} geohash: ${geoHash}`)
+
+        if(
+          geoHash >= start
+          && geoHash <= end
+        ){
+          found_keys.push( place_id )
+        }
+
       }
     }
+
+    return found_keys
+    
+    // const found_keys = []
+    // for (const top_level_key in this.geohash_reference) {
+    //   if (
+    //     top_level_key.indexOf(start_4) === 0
+    //   ) {
+    //     for (const second_level_key in this.geohash_reference[top_level_key]) {
+    //       if(
+    //         second_level_key >= start
+    //         && second_level_key <= end
+    //       ){
+    //         found_keys.push( ...this.geohash_reference[top_level_key][second_level_key] )
+    //       }
+    //     }
+    //   }
+    // }
 
     return found_keys
   }
@@ -159,17 +247,31 @@ class CycleParking{
    * @returns {this}
    */
   addGeohashesToData = () => {
-    console.log('addGeohashesToData(): typeof this.getData()', typeof this.getData());
-    console.log('addGeohashesToData(): JSON.stringify(this.getData()).substring(0,100)', JSON.stringify(this.getData()).substring(0,100));
-    for (const place_id in this.getData()) {
-      if (Object.hasOwnProperty.call(this.getData(), place_id)) {
-        // 9 chars is accurate to about 4 metres ish (and is also as accurate as the TFL coords will get)
-        console.log('addGeohashesToData(): place_id', place_id);
-        console.log('addGeohashesToData(): this.getData()[ place_id ]', this.getData()[ place_id ]);
-        this.getData()[ place_id ][ 'geohash' ] = encode( this.getData()[ place_id ].lat, this.getData()[ place_id ].lon, 9 ) 
-        this.addGeoHashReference( this.getData()[ place_id ][ 'geohash' ], place_id )
-      }
+    if(this.debug) console.log('addGeohashesToData(): typeof this.getData()', typeof this.getData());
+    if(this.debug) console.log('addGeohashesToData(): JSON.stringify(this.getData()).substring(0,100)', JSON.stringify(this.getData()).substring(0,100));
+
+    const keys = Object.keys( this.getData() )
+
+    if(this.debug) console.log(`addGeohashesToData(): keys.length ${keys.length}`);
+    for(let i=0, l=keys.length; i<l; i++){
+      let key = keys[i];
+      console.log('key', key)
+      // // let geohash = encode( this.getData()[ key ].lat, this.getData()[ key ].lon, 9 )
+      // let geohash = 'foobar'
+      // this.getData()[ key ][ 'geohash' ] =  geohash
+      // this.addGeoHashReference( this.getData()[ key ][ 'geohash' ], key )  
     }
+    
+    // for (const place_id in this.getData()) {
+    //   if (this.getData().hasOwnProperty(place_id)) {
+    //     // 9 chars is accurate to about 4 metres ish (and is also as accurate as the TFL coords will get)
+    //     if(this.debug) console.log('addGeohashesToData(): place_id', place_id);
+    //     if(this.debug) console.log('addGeohashesToData(): this.getData()[ place_id ]', this.getData()[ place_id ]);
+    //     this.getData()[ place_id ][ 'geohash' ] = encode( this.getData()[ place_id ].lat, this.getData()[ place_id ].lon, 9 ) 
+    //     this.addGeoHashReference( this.getData()[ place_id ][ 'geohash' ], place_id )
+    //   }
+    // }
+    this.geohashes_created = true
     return this
   }
 

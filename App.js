@@ -27,12 +27,10 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import MapView, { Circle } from "react-native-maps";
+import MapView, { Circle, Marker } from "react-native-maps";
 
-// import { CycleParking } from "./cycleparking-tools/CycleParking";
-
-// const cycleParking = new CycleParking();
-
+import { CycleParking } from "./cycleparking-tools/CycleParking";
+const cycleParking = new CycleParking( true );
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -53,6 +51,8 @@ const App: () => Node = () => {
     const metres = miles / 0.00062137
     return metres
   }
+
+  const [markers, setMarkers] = useState([])
 
   // circle props
   const [circleProps, setCircleProps] = useState({
@@ -88,13 +88,38 @@ const App: () => Node = () => {
     const tapped_lon = e.nativeEvent.coordinate.longitude
 
     // draw circle
-    drawCircleToFitWidth(tapped_lat, tapped_lon)
+    const radius = drawCircleToFitWidth(tapped_lat, tapped_lon)
 
     // get cycle parking
+    cycleParking.getCycleParksInRange( tapped_lat, tapped_lon, radius ).then( places => {
+      console.log(`getCycleParksInRange got ${places.length} places`, places)
+
+      const new_markers = []
+      let i = 0
+      places.forEach( place => {
+        i++
+        new_markers.push({
+          key: String(i),
+          coordinate: {
+            latitude: place.lat,
+            longitude: place.lon
+          }
+        })
+      })
+
+      setMarkers( new_markers )
+
+    }).catch(console.log)
     
 
   }
 
+  /**
+   * 
+   * @param {number} lat 
+   * @param {number} lon 
+   * @returns {number} calculated radius in METRES
+   */
   const drawCircleToFitWidth = (lat, lon) => {
     const latitudeDelta = mapRegion.latitudeDelta;
     const new_centre = {
@@ -112,6 +137,7 @@ const App: () => Node = () => {
       console.log('new circle state', newState);
       return newState;
     });
+    return new_radius
   };
 
 
@@ -135,7 +161,10 @@ const App: () => Node = () => {
         //   longitudeDelta: 0.0421,
         // }}
       >
+        {markers.map( marker => <Marker key={marker.key} coordinate={marker.coordinate} /> )}
+
         {circleProps.visible ? <Circle center={circleProps.center} radius={circleProps.radius} /> : null}
+
       </MapView>
       
     </View>
