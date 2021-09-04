@@ -27,13 +27,51 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import MapView, { Circle, Marker } from "react-native-maps";
+import MapView, { Callout, Circle, Marker } from "react-native-maps";
 
 import { CycleParking } from "./cycleparking-tools/CycleParking";
 const cycleParking = new CycleParking( true );
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
+
+  // https://mapstyle.withgoogle.com/
+  const customGoogleMapStyle = [
+    {
+      "featureType": "poi",
+      "elementType": "labels.text",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "poi.business",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels.icon",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    },
+    {
+      "featureType": "transit",
+      "stylers": [
+        {
+          "visibility": "off"
+        }
+      ]
+    }
+  ]
 
 
   const backgroundStyle = {
@@ -97,13 +135,22 @@ const App: () => Node = () => {
       const new_markers = []
       let i = 0
       places.forEach( place => {
-        i++
+      
+        const {
+          name,
+          standtype,
+          spaces,
+          secure
+        } = place
+
         new_markers.push({
-          key: String(i),
+          key: place.id,
           coordinate: {
             latitude: place.lat,
             longitude: place.lon
-          }
+          },
+          title: name,
+          description: `${standtype} (${spaces} spaces) (${secure === 'FALSE' ? 'not ' : ''}secure )`
         })
       })
 
@@ -112,6 +159,10 @@ const App: () => Node = () => {
     }).catch(console.log)
     
 
+  }
+
+  const markerOnCalloutPressHandler = (e) => {
+    console.log('markerOnCalloutPressHandler e.nativeEvent', e.nativeEvent)
   }
 
   /**
@@ -126,7 +177,7 @@ const App: () => Node = () => {
       latitude: lat,
       longitude: lon,
     };
-    const new_radius = Math.min(latitudeDeltaToMetres(latitudeDelta) / 5, 400);
+    const new_radius = Math.min(latitudeDeltaToMetres(latitudeDelta) / 5, 1000);
     setCircleProps(prevState => {
       const newState = {
         ...prevState,
@@ -151,9 +202,14 @@ const App: () => Node = () => {
       <MapView
         ref={mapRef}
         style={styles.map}
+        customMapStyle={customGoogleMapStyle}
         camera={mapCamera}
         onPress={onPressHandler}
         onRegionChangeComplete={onRegionChangeCompleteHandler}
+
+        showsPointsOfInterest={false}
+        showsBuildings={false}
+        showsIndoors={false}
         // initialRegion={{
         //   latitude: 37.78825,
         //   longitude: -122.4324,
@@ -161,7 +217,7 @@ const App: () => Node = () => {
         //   longitudeDelta: 0.0421,
         // }}
       >
-        {markers.map( marker => <Marker key={marker.key} coordinate={marker.coordinate} /> )}
+        {markers.map( marker => <Marker onCalloutPress={markerOnCalloutPressHandler} {...marker} />)}
 
         {circleProps.visible ? <Circle center={circleProps.center} radius={circleProps.radius} /> : null}
 
@@ -215,3 +271,5 @@ const styles = StyleSheet.create({
  });
 
 export default App;
+
+
