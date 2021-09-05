@@ -86,6 +86,8 @@ const App: () => Node = () => {
   const mapRef = useRef(null);
   const infoPaneRef = useRef(null);
 
+  const [selectedMarker, setSelectedMarker] = useState(null)
+
   const barnes_roundabout_latlon = [51.470624, -0.255804];
 
   const latitudeDeltaToMetres = ( latitudeDelta ) => {
@@ -177,8 +179,8 @@ const App: () => Node = () => {
     // centre camera here
     setCameraOver(tapped_lat, tapped_lon, 500)
 
-    // dismiss the infopane
-    infoPaneRef.current.isHidden() || infoPaneRef.current.hide()
+    // clear the selectedMarker
+    setSelectedMarker( null )
 
   }
 
@@ -202,6 +204,7 @@ const App: () => Node = () => {
           latitude: place.lat,
           longitude: place.lon
         },
+        standtype: standtype,
         title: name,
         description: `${standtype} (${spaces} spaces) (${secure === 'FALSE' ? 'not ' : ''}secure)`
       })
@@ -244,20 +247,22 @@ const App: () => Node = () => {
   const getMapContainerStyles = () => {
     // is infopane hidden?
     const this_style = {...styles.map_container}
-    if( infoPaneRef && infoPaneRef.current && infoPaneRef.current.isHidden()){
-      this_style.height = '100%'
-    }else{
-      this_style.height = '90%'
-    }
+    // if( infoPaneRef && infoPaneRef.current && infoPaneRef.current.isHidden()){
+    //   this_style.height = '100%'
+    // }else{
+    //   this_style.height = '90%'
+    // }
     return this_style
   }
 
 
   const onMarkerPress = (e) => {
     console.log('onMarkerPress e', e)    
-    // e.nativeEvent {"action": "marker-press", "coordinate": {"latitude": 51.470485, "longitude": -0.255915}, "id": null, "position": {"x": 501, "y": 1473}}   
-    let cool_text = `${e.title} - ${e.description}`
-    infoPaneRef.current.setTextAndShow( cool_text )
+    // onMarkerPress e {"coordinate": {"latitude": 51.469947, "longitude": -0.255323}, "description": "Sheffield (4 spaces) (not secure)", "id": "CyclePark_RWG232825", "key": "CyclePark_RWG232825", "standtype": "Sheffield", "title": "Richmond upon Thames"}
+
+    // give this marker to the infopane
+    setSelectedMarker( e );
+
   }
 
   //TODO show pane on marker selected
@@ -299,7 +304,9 @@ const App: () => Node = () => {
         </MapView>
       </View>
 
-      <InfoPane ref={infoPaneRef} />
+
+      {selectedMarker && <InfoPane marker={selectedMarker} />}
+      
 
     </View>
   );
@@ -308,12 +315,14 @@ const App: () => Node = () => {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
+    flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
   map_container: {
-    ...StyleSheet.absoluteFillObject,
-    height: '90%',
+    // ...StyleSheet.absoluteFillObject,
+    width:'100%', height:'100%',
+    flex:9,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },

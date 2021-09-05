@@ -1,14 +1,20 @@
 import React, { Component } from 'react'
 import { View, Text, StyleSheet } from "react-native"
+import InfoPaneIcon from './InfoPaneIcon'
+import StandTypeIcon from './StandTypeIcon'
 
 class InfoPane extends Component{
 
   constructor(props){
     super(props)
+
+    console.log('this.props', this.props);
+
     this.state = {
       is_hidden: true,
       height: '10%',
-      text: 'no text'     
+      text: 'no text',
+      cyclepark: this.props.marker 
     }
   }
 
@@ -48,14 +54,19 @@ class InfoPane extends Component{
     return {
       width: styles.view.width,
       height: this.state.height,
-      backgroundColor: styles.view.backgroundColor
+      backgroundColor: styles.view.backgroundColor,
+      flexDirection: "row"
     }
   }
 
   render(){
     return (
-      <View style={this.getStyle()} >
-        <Text style={styles.text}>{this.state.text}</Text>
+      <View style={ this.getStyle() } >
+        <StandTypeIcon standtype={this.props.marker.standtype} />
+        <InfoPaneIcon />
+        <InfoPaneIcon />
+        <InfoPaneIcon />
+        {/* <Text style={styles.text}>{this.state.text}</Text> */}
       </View>
     ) 
   }
@@ -85,7 +96,7 @@ class InfoPane extends Component{
 
 const styles = StyleSheet.create({
   view:{
-    height: '10%',
+    flex: 1,
     width: '100%',
     backgroundColor: 'blue'
   },
