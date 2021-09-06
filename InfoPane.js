@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import { View, Text, StyleSheet } from "react-native"
+import BookmarkIcon from './BookmarkIcon'
 import InfoPaneIcon from './InfoPaneIcon'
+import SecureIcon from './SecureIcon'
+import SpacesIcon from './SpacesIcon'
 import StandTypeIcon from './StandTypeIcon'
 
 class InfoPane extends Component{
@@ -63,9 +66,9 @@ class InfoPane extends Component{
     return (
       <View style={ this.getStyle() } >
         <StandTypeIcon standtype={this.props.marker.standtype} />
-        <InfoPaneIcon />
-        <InfoPaneIcon />
-        <InfoPaneIcon />
+        <SpacesIcon spaces={this.props.marker.spaces} />
+        <SecureIcon secure={this.props.marker.secure} />
+        <BookmarkIcon />
         {/* <Text style={styles.text}>{this.state.text}</Text> */}
       </View>
     ) 

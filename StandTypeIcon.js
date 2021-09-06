@@ -17,20 +17,18 @@ class StandTypeIcon extends InfoPaneIcon{
     super(props)
   }
 
-  //TODO this is not rerendering
   getImage(){
-    let to_return = <Image style={styles.image} source={image_other}/>
     let sd = this.props.standtype.toLocaleLowerCase()
-    console.log('sd', sd);
-    if(sd === 'other') to_return = <Image style={styles.image} source={image_other}/>
-    if(sd === 'sheffield') to_return = <Image style={styles.image} source={image_sheffield}/>
-    if(sd === 'cyclehoop') to_return = <Image style={styles.image} source={image_cyclehoop}/>
-    if(sd === 'm stand') to_return = <Image style={styles.image} source={image_mstand}/>
-    if(sd === 'butterfly') to_return = <Image style={styles.image} source={image_butterfly}/>
-    if(sd === 'wheel rack') to_return = <Image style={styles.image} source={image_wheelrack}/>
-    if(sd === 'post') to_return = <Image style={styles.image} source={image_post}/>
-    if(sd === 'p stand') to_return = <Image style={styles.image} source={image_pstand}/>
-    return to_return
+    let image_file = image_other
+    if(sd === 'other') image_file = image_other
+    if(sd === 'sheffield') image_file = image_sheffield
+    if(sd === 'cyclehoop') image_file = image_cyclehoop
+    if(sd === 'm stand') image_file = image_mstand
+    if(sd === 'butterfly') image_file = image_butterfly
+    if(sd === 'wheel rack') image_file = image_wheelrack
+    if(sd === 'post') image_file = image_post
+    if(sd === 'p stand') image_file = image_pstand
+    return <Image style={styles.image} source={image_file}/>
   }
 
   render(){

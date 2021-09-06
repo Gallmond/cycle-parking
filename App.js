@@ -205,6 +205,8 @@ const App: () => Node = () => {
           longitude: place.lon
         },
         standtype: standtype,
+        spaces: spaces,
+        secure: secure,
         title: name,
         description: `${standtype} (${spaces} spaces) (${secure === 'FALSE' ? 'not ' : ''}secure)`
       })
