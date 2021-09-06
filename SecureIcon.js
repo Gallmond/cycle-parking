@@ -12,7 +12,7 @@ class SecureIcon extends InfoPaneIcon{
   }
 
   getImage(){
-    const is_secure = this.props.secure.toString().toLowerCase() === 'true'
+    const is_secure = this.props.secure
     let source_file = image_unlocked
     if(is_secure) source_file = image_locked
     return <Image style={styles.image} source={source_file} />

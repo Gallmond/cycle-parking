@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, Image } from "react-native"
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native"
 import InfoPaneIcon from './InfoPaneIcon'
 
 const image_bookmark = require(`./images/bookmark.png`)
@@ -16,11 +16,13 @@ class BookmarkIcon extends InfoPaneIcon{
 
   render(){
     return (
-      <View style={styles.view} >
-        <Text style={styles.text}>Bookmark</Text>
-        {this.getImage()}
+      <View style={styles.view}>
+        <TouchableOpacity onPress={this.props.onPress}>
+          <Text style={styles.text}>Bookmark</Text>
+          {this.getImage()}
+        </TouchableOpacity>
       </View>
-    ) 
+    ); 
   }
 
 }

@@ -34,7 +34,9 @@ import { Callout, Circle, Marker } from "react-native-maps";
 import { CycleParking } from "./cycleparking-tools/CycleParking";
 import InfoPane from './InfoPane.js';
 
+import cycleparkingJson from './cycleparking-tools/cycleparking.json'
 const cycleParking = new CycleParking( true );
+cycleParking.setData( cycleparkingJson )
 
 const win_width = Dimensions.get('window').width
 const win_height = Dimensions.get('window').height
@@ -84,7 +86,6 @@ const App: () => Node = () => {
 
 
   const mapRef = useRef(null);
-  const infoPaneRef = useRef(null);
 
   const [selectedMarker, setSelectedMarker] = useState(null)
 
@@ -114,7 +115,9 @@ const App: () => Node = () => {
 
   const _renderMarker = ( marker ) => {
     // console.log( '_renderMarker marker', marker )
-    return ( <Marker onPress={()=>{onMarkerPress(marker)}} {...marker} /> )
+    return ( <Marker onPress={()=>{onMarkerPress(marker)}} {...marker} >
+      <Callout title={marker.title} description={marker.description} />
+    </Marker> )
   }
 
   // circle props
@@ -165,8 +168,6 @@ const App: () => Node = () => {
     console.log('onPressHandler e.nativeEvent', e.nativeEvent)
     // {"action": "press", "coordinate": {"latitude": 51.4741348880686, "longitude": -0.25690030306577677}, "position": {"x": 435, "y": 781}}
 
-    // infoPaneRef.current.hide()
-
     const tapped_lat = e.nativeEvent.coordinate.latitude
     const tapped_lon = e.nativeEvent.coordinate.longitude
 
@@ -184,31 +185,20 @@ const App: () => Node = () => {
 
   }
 
-  const putCycleParkMarkersOnMap = (places) => {
+  const putCycleParkMarkersOnMap = ( cycleparks ) => {
     const new_markers = []
-    let i = 0
-    places.forEach( place => {
+    cycleparks.forEach( cyclepark => {
     
-      const {
-        id,
-        name,
-        standtype,
-        spaces,
-        secure
-      } = place
-
       new_markers.push({
-        id: id, // for the react id
-        key: id, // for the react key
+        id: cyclepark.getId(), // for the react id
+        key: cyclepark.getId(), // for the react key
         coordinate: {
-          latitude: place.lat,
-          longitude: place.lon
+          latitude: cyclepark.getLat(),
+          longitude: cyclepark.getLon()
         },
-        standtype: standtype,
-        spaces: spaces,
-        secure: secure,
-        title: name,
-        description: `${standtype} (${spaces} spaces) (${secure === 'FALSE' ? 'not ' : ''}secure)`
+        cyclepark: cyclepark,
+        title: 'foobar',
+        description: `${cyclepark.getType()} (${cyclepark.getSpaces()} spaces) (${!cyclepark.isSecure() ? 'not ' : ''}secure)`
       })
     })
 
@@ -247,13 +237,7 @@ const App: () => Node = () => {
   };
 
   const getMapContainerStyles = () => {
-    // is infopane hidden?
     const this_style = {...styles.map_container}
-    // if( infoPaneRef && infoPaneRef.current && infoPaneRef.current.isHidden()){
-    //   this_style.height = '100%'
-    // }else{
-    //   this_style.height = '90%'
-    // }
     return this_style
   }
 

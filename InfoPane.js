@@ -5,6 +5,8 @@ import InfoPaneIcon from './InfoPaneIcon'
 import SecureIcon from './SecureIcon'
 import SpacesIcon from './SpacesIcon'
 import StandTypeIcon from './StandTypeIcon'
+import { Linking } from 'react-native'
+import { UrlTile } from 'react-native-maps'
 
 class InfoPane extends Component{
 
@@ -16,8 +18,7 @@ class InfoPane extends Component{
     this.state = {
       is_hidden: true,
       height: '10%',
-      text: 'no text',
-      cyclepark: this.props.marker 
+      text: 'no text'
     }
   }
 
@@ -62,13 +63,23 @@ class InfoPane extends Component{
     }
   }
 
+  bookmarkPressed(){
+    const query = [
+      'api=1',
+      'destination=' + encodeURIComponent(`${this.props.marker.cyclepark.getLat()},${this.props.marker.cyclepark.getLon()}`),
+      'travelmode=bicycling'
+    ]
+    const gmap_url = 'https://www.google.com/maps/dir/' + '?' + query.join('&')
+    Linking.openURL(gmap_url)
+  }
+
   render(){
     return (
       <View style={ this.getStyle() } >
-        <StandTypeIcon standtype={this.props.marker.standtype} />
-        <SpacesIcon spaces={this.props.marker.spaces} />
-        <SecureIcon secure={this.props.marker.secure} />
-        <BookmarkIcon />
+        <StandTypeIcon standtype={this.props.marker.cyclepark.getType()} />
+        <SpacesIcon spaces={this.props.marker.cyclepark.getSpaces()} />
+        <SecureIcon secure={this.props.marker.cyclepark.isSecure()} />
+        <BookmarkIcon onPress={()=>{console.log('BOOKMARK ME');this.bookmarkPressed()}} />
         {/* <Text style={styles.text}>{this.state.text}</Text> */}
       </View>
     ) 

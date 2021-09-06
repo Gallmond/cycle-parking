@@ -13,7 +13,7 @@ class InfoPaneIcon extends Component{
   render(){
     return (
       <View style={styles.view} >
-        <Text style={styles.text}>{this.state.text}</Text>
+          <Text style={styles.text}>{this.state.text}</Text>
       </View>
     ) 
   }
