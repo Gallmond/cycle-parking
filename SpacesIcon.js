@@ -6,42 +6,37 @@ class SpacesIcon extends InfoPaneIcon{
 
   constructor(props){
     super(props)
+
+    this.styles = StyleSheet.flatten([this.styles,{
+      view: {
+        ...this.styles.view,
+        backgroundColor: '#185ABC',
+      },
+      text: {
+        ...this.styles.text,
+        color: 'white',
+      },
+      spaces: {
+        flex: 0.8,
+        aspectRatio: 1,
+        color: 'black',
+        fontSize: 40,
+        textAlign: 'center'
+      }
+
+    }])
+
   }
 
   render(){
     return (
-      <View style={styles.view} >
-        <Text style={styles.text}>Spaces</Text>
-        <Text style={styles.spaces}>{this.props.spaces}</Text>
+      <View style={this.styles.view} >
+        <Text style={this.styles.text}>Spaces</Text>
+        <Text style={this.styles.spaces}>{this.props.spaces}</Text>
       </View>
     ) 
   }
 
 }
-
-const styles = StyleSheet.create({
-  spaces: {
-    flex: 0.8,
-    aspectRatio: 1,
-    color: 'white',
-    fontSize: 40,
-    textAlign: 'center'
-  },
-  view:{
-    height: '100%',
-    backgroundColor: '#185ABC',
-    flex:1,
-    borderColor: 'black',
-    borderWidth: 1,
-    padding:0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    flex: 0.2,
-    color: 'white',
-    fontSize: 10,
-  }
-})
 
 export default SpacesIcon

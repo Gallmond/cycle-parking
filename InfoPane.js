@@ -80,33 +80,12 @@ class InfoPane extends Component{
         <SpacesIcon spaces={this.props.marker.cyclepark.getSpaces()} />
         <SecureIcon secure={this.props.marker.cyclepark.isSecure()} />
         <BookmarkIcon onPress={()=>{console.log('BOOKMARK ME');this.bookmarkPressed()}} />
-        {/* <Text style={styles.text}>{this.state.text}</Text> */}
+        <BookmarkIcon onPress={()=>{console.log('BOOKMARK ME');this.bookmarkPressed()}} />
       </View>
     ) 
   }
 
 }
-
-// const InfoPane = ( props ) => {
-
-//   toggle = () => {
-
-//     is_hidden = !is_hidden
-
-//     if(is_hidden){
-//       styles.view.height = '0%'
-//     }else{
-//       styles.view.height = '10%'
-//     }
-
-//   }
-
-//   return (
-//     <View style={styles.view}>
-//       <Text>{props.text}</Text>
-//     </View>
-//   )
-// }
 
 const styles = StyleSheet.create({
   view:{

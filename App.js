@@ -273,7 +273,7 @@ const App: () => Node = () => {
           clusterColor={'#B52929'}
           spiralEnabled={false}
           maxZoom={18}
-          radius={win_width * 0.025} // pixels, default is 6% of window width
+          radius={win_width * 0.075} // pixels, default is 6% of window width
 
           initialRegion={{
             latitude: 51.5079,
