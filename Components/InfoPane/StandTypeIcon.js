@@ -2,14 +2,14 @@ import React from 'react'
 import { View, Text, StyleSheet, Image } from "react-native"
 import InfoPaneIcon from './InfoPaneIcon'
 
-const image_other = require(`./stands/other.png`)
-const image_sheffield = require(`./stands/sheffield.png`)
-const image_butterfly = require('./stands/butterfly.png')
-const image_cyclehoop = require('./stands/cyclehoop.png')
-const image_mstand = require('./stands/mstand.png')
-const image_post = require('./stands/post.png')
-const image_pstand = require('./stands/pstand.png')
-const image_wheelrack = require('./stands/wheelrack.png')
+const image_other = require(`./../../stands/other.png`)
+const image_sheffield = require(`./../../stands/sheffield.png`)
+const image_butterfly = require('./../../stands/butterfly.png')
+const image_cyclehoop = require('./../../stands/cyclehoop.png')
+const image_mstand = require('./../../stands/mstand.png')
+const image_post = require('./../../stands/post.png')
+const image_pstand = require('./../../stands/pstand.png')
+const image_wheelrack = require('./../../stands/wheelrack.png')
 
 class StandTypeIcon extends InfoPaneIcon{
 

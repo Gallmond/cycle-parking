@@ -2,8 +2,8 @@ import React from 'react'
 import { View, Text, StyleSheet, Image } from "react-native"
 import InfoPaneIcon from './InfoPaneIcon'
 
-const image_locked = require(`./images/locked.png`)
-const image_unlocked = require(`./images/unlocked.png`)
+const image_locked = require(`./../../images/locked.png`)
+const image_unlocked = require(`./../../images/unlocked.png`)
 
 class SecureIcon extends InfoPaneIcon{
 

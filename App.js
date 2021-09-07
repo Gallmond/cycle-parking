@@ -8,7 +8,6 @@
 
 import React from 'react';
 import { useState, useRef } from 'react';
-import type {Node} from 'react';
 import {
   Dimensions,
   SafeAreaView,
@@ -32,7 +31,7 @@ import MapView from 'react-native-map-clustering';
 import { Callout, Circle, Marker } from "react-native-maps";
 
 import { CycleParking } from "./cycleparking-tools/CycleParking";
-import InfoPane from './InfoPane.js';
+import InfoPane from './Components/InfoPane/InfoPane.js';
 
 import cycleparkingJson from './cycleparking-tools/cycleparking.json'
 const cycleParking = new CycleParking( true );
@@ -43,7 +42,7 @@ const win_height = Dimensions.get('window').height
 
 const MAX_CIRCLE_RADIUS_METRES = 1000
 
-const App: () => Node = () => {
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   // https://mapstyle.withgoogle.com/

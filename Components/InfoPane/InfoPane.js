@@ -1,12 +1,10 @@
 import React, { Component } from 'react'
 import { View, Text, StyleSheet } from "react-native"
-import BookmarkIcon from './BookmarkIcon'
-import InfoPaneIcon from './InfoPaneIcon'
 import SecureIcon from './SecureIcon'
 import SpacesIcon from './SpacesIcon'
 import StandTypeIcon from './StandTypeIcon'
 import { Linking } from 'react-native'
-import { UrlTile } from 'react-native-maps'
+import RoutingIcon from './RoutingIcon'
 
 class InfoPane extends Component{
 
@@ -63,7 +61,7 @@ class InfoPane extends Component{
     }
   }
 
-  bookmarkPressed(){
+  openGoogleMapsWithDirections(){
     const query = [
       'api=1',
       'destination=' + encodeURIComponent(`${this.props.marker.cyclepark.getLat()},${this.props.marker.cyclepark.getLon()}`),
@@ -79,8 +77,7 @@ class InfoPane extends Component{
         <StandTypeIcon standtype={this.props.marker.cyclepark.getType()} />
         <SpacesIcon spaces={this.props.marker.cyclepark.getSpaces()} />
         <SecureIcon secure={this.props.marker.cyclepark.isSecure()} />
-        <BookmarkIcon onPress={()=>{console.log('BOOKMARK ME');this.bookmarkPressed()}} />
-        <BookmarkIcon onPress={()=>{console.log('BOOKMARK ME');this.bookmarkPressed()}} />
+        <RoutingIcon onPress={()=>{console.log('BOOKMARK ME');this.openGoogleMapsWithDirections()}} />
       </View>
     ) 
   }
