@@ -2,7 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native"
 import InfoPaneIcon from './InfoPaneIcon'
 
-const image_bookmark = require(`./../images/bookmark.png`)
+const image_bookmark = require(`./../../images/bookmark.png`)
 
 class BookmarkIcon extends InfoPaneIcon{
 

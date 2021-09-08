@@ -138,6 +138,7 @@ const run = async () => {
       geohash: geohash,
       lat: lat,
       lon: lon,
+      name:commonName,
       spaces:spaces,
       secure:secure,
       covered:covered,

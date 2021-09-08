@@ -1,7 +1,3 @@
-// import * as fs from 'fs'
-// import * as FileSystem from 'expo-file-system';
-// var RNFS = require('react-native-fs');
-import {encode, decode, bounds, adjacent, neighbours} from './GeohashingVeness.js'
 import { geohashQueryBounds } from 'geofire-common'
 
 class CyclePark{
@@ -19,6 +15,9 @@ class CyclePark{
   }
   getLon = () => {
     return this.data['lon'] ?? null;
+  }
+  getName = () => {
+    return this.data['name'] ?? null;
   }
   getSpaces = () => {
     return this.data['spaces'] ?? null;

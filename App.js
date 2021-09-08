@@ -37,113 +37,103 @@ import cycleparkingJson from './cycleparking-tools/cycleparking.json'
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson )
 
-const win_width = Dimensions.get('window').width
-const win_height = Dimensions.get('window').height
-
+// unchanging settings
+const WIN_WIDTH = Dimensions.get('window').width
+const BARNES_ROUNDABOUT_LATLON = [51.470624, -0.255804]
 const MAX_CIRCLE_RADIUS_METRES = 1000
+// https://mapstyle.withgoogle.com/
+const GOOGLE_MAP_STYLE = [
+  {
+    "featureType": "poi",
+    "elementType": "labels.text",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.business",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  }
+]
+
+// helper functions
+const latitudeDeltaToMetres = ( latitudeDelta ) => {
+  const miles = latitudeDelta * 69 // 1 degree is approx 69 miles
+  const metres = miles / 0.00062137 // 0.00001° = 1.11 m
+  return metres
+}
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
 
-  // https://mapstyle.withgoogle.com/
-  const customGoogleMapStyle = [
-    {
-      "featureType": "poi",
-      "elementType": "labels.text",
-      "stylers": [
-        {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "poi.business",
-      "stylers": [
-        {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "road",
-      "elementType": "labels.icon",
-      "stylers": [
-        {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "transit",
-      "stylers": [
-        {
-          "visibility": "off"
-        }
-      ]
-    }
-  ]
-
-
+  // reference to the map, use this to call map methods
   const mapRef = useRef(null);
 
-  const [selectedMarker, setSelectedMarker] = useState(null)
-
-  const barnes_roundabout_latlon = [51.470624, -0.255804];
-
-  const latitudeDeltaToMetres = ( latitudeDelta ) => {
-    // 0.00001° = 1.11 m
-    // 1degree is approx 69 miles
-    const miles = latitudeDelta * 69
-    const metres = miles / 0.00062137
-    return metres
-  }
-
+  // all markers
   const [markers, setMarkers] = useState([])
 
+  // store the currently selected marker here
+  const [selectedMarker, setSelectedMarker] = useState(null)
 
-  const clusterOnPressHandler = ( e ) => {
-    console.log('clusterOnPressHandler e.nativeEvent', e.nativeEvent)
-    const { action, coordinate } = e.nativeEvent
-    
-    // e.nativeEvent {"action": "marker-press", "coordinate": {"latitude": 51.46608618252856, "longitude": -0.2671480178833008}, "id": null, "position": {"x": 649, "y": 1128}}
-    // if(action === "marker-press"){
-    //   zoomCameraTo(coordinate.latitude, coordinate.longitude, 18)
-    // }
-  
-  }
-
-  const _renderMarker = ( marker ) => {
-    // console.log( '_renderMarker marker', marker )
-    return ( <Marker onPress={()=>{onMarkerPress(marker)}} {...marker} >
-      <Callout title={marker.title} description={marker.description} />
-    </Marker> )
-  }
-
-  // circle props
-  const [circleProps, setCircleProps] = useState({
-    visible: false,
-    center:{latitude:barnes_roundabout_latlon[0], longitude: barnes_roundabout_latlon[1]},
-    radius:100
-  })
-
-  // keep track of the region, we need the deltas
+  // keep track of the region, we use this for latitudeDelta and calculating circle width
   const [mapRegion, setRegion] = useState(null)
-  const onRegionChangeCompleteHandler = (e) => {
-    // console.log('onRegionChangeCompleteHandler e', e)
-    // {"latitude": 51.472480300910206, "latitudeDelta": 0.010265127233381577, "longitude": -0.2561464346945286, "longitudeDelta": 0.007725097239017487}
-    setRegion(e)
-  }
 
+  // camera
   const [mapCamera, setMapCamera] = useState({
     center: {
-      latitude: barnes_roundabout_latlon[0],
-      longitude: barnes_roundabout_latlon[1],
+      latitude: BARNES_ROUNDABOUT_LATLON[0],
+      longitude: BARNES_ROUNDABOUT_LATLON[1],
     },
     pitch: 0,
     heading: 0,
     altitude: 5,
     zoom: 16, // 0 - 20
   });
+
+  // current circle settings
+  const [circleProps, setCircleProps] = useState({
+    visible: false,
+    center:{latitude:BARNES_ROUNDABOUT_LATLON[0], longitude: BARNES_ROUNDABOUT_LATLON[1]},
+    radius:100
+  })
+
+  // some formatting to return marker
+  const renderMarker = ( marker ) => {
+    return ( 
+      <Marker onPress={()=>{onMarkerPress( marker )}} {...marker} >
+        <Callout title={marker.title} description={marker.description} />
+      </Marker> 
+    )
+  }
+
+  // When the region changes, update our copy of it
+  const onRegionChangeCompleteHandler = (e) => {
+    setRegion(e)
+  }
+
+  // pan the camera to a given lat lon over a given time
   const setCameraOver = (lat, lon, duration_ms = 500) => {
     mapRef.current.animateCamera({
       center:{
@@ -152,20 +142,9 @@ const App = () => {
       }
     },{duration:duration_ms})
   }
-  const zoomCameraTo = (lat, lon, zoom, duration_ms = 500) => {
-    mapRef.current.animateCamera({
-      center:{
-        latitude: lat,
-        longitude: lon
-      },
-      zoom: zoom
-    },{duration:duration_ms})
-  }
 
-
+  // when the map itself is pressed
   const onPressHandler = async (e) => {
-    console.log('onPressHandler e.nativeEvent', e.nativeEvent)
-    // {"action": "press", "coordinate": {"latitude": 51.4741348880686, "longitude": -0.25690030306577677}, "position": {"x": 435, "y": 781}}
 
     const tapped_lat = e.nativeEvent.coordinate.latitude
     const tapped_lon = e.nativeEvent.coordinate.longitude
@@ -173,17 +152,18 @@ const App = () => {
     // draw circle
     const radius = drawCircleToFitWidth(tapped_lat, tapped_lon)
 
-    // get cycle parking
+    // get cycle parking and add it to the map
     cycleParking.getCycleParksInRange( tapped_lat, tapped_lon, radius ).then( putCycleParkMarkersOnMap ).catch( console.log ) 
     
     // centre camera here
     setCameraOver(tapped_lat, tapped_lon, 500)
 
-    // clear the selectedMarker
-    setSelectedMarker( null )
+    // clear the selectedMarker if any is set
+    selectedMarker && setSelectedMarker( null )
 
   }
 
+  // create markers for a given set of CyclePark objects
   const putCycleParkMarkersOnMap = ( cycleparks ) => {
     const new_markers = []
     cycleparks.forEach( cyclepark => {
@@ -196,7 +176,7 @@ const App = () => {
           longitude: cyclepark.getLon()
         },
         cyclepark: cyclepark,
-        title: 'foobar',
+        title: cyclepark.getName(),
         description: `${cyclepark.getType()} (${cyclepark.getSpaces()} spaces) (${!cyclepark.isSecure() ? 'not ' : ''}secure)`
       })
     })
@@ -204,11 +184,6 @@ const App = () => {
     setMarkers( new_markers )
   }
 
-
-  const markerOnCalloutPressHandler = (e) => {
-    console.log('markerOnCalloutPressHandler e.nativeEvent', e.nativeEvent)
-    console.log('markerOnCalloutPressHandler e', e)
-  }
 
   /**
    * 
@@ -235,30 +210,20 @@ const App = () => {
     return new_radius
   };
 
-  const getMapContainerStyles = () => {
-    const this_style = {...styles.map_container}
-    return this_style
-  }
-
 
   const onMarkerPress = (e) => {
-    console.log('onMarkerPress e', e)    
-    // onMarkerPress e {"coordinate": {"latitude": 51.469947, "longitude": -0.255323}, "description": "Sheffield (4 spaces) (not secure)", "id": "CyclePark_RWG232825", "key": "CyclePark_RWG232825", "standtype": "Sheffield", "title": "Richmond upon Thames"}
-
-    // give this marker to the infopane
     setSelectedMarker( e );
-
   }
 
   //TODO show pane on marker selected
 
   return (
     <View style={styles.container}>
-      <View style={getMapContainerStyles()}>
+      <View style={styles.map_container}>
         <MapView
           ref={mapRef}
           style={styles.map}
-          customMapStyle={customGoogleMapStyle}
+          customMapStyle={GOOGLE_MAP_STYLE}
           camera={mapCamera}
           onPress={onPressHandler}
           onRegionChangeComplete={onRegionChangeCompleteHandler}
@@ -267,13 +232,13 @@ const App = () => {
           showsBuildings={false}
           showsIndoors={false}
 
-          // renderCluster={_renderCluster}
-
+          // cluster options
           clusterColor={'#B52929'}
           spiralEnabled={false}
           maxZoom={18}
-          radius={win_width * 0.075} // pixels, default is 6% of window width
+          radius={WIN_WIDTH * 0.075} // pixels, default is 6% of window width
 
+          // cluster fails without an initial region
           initialRegion={{
             latitude: 51.5079,
             longitude: -0.0877,
@@ -281,17 +246,18 @@ const App = () => {
             longitudeDelta: 0.0421,
           }}
         >
-          {markers.map( marker => _renderMarker( marker ) )}
 
-          {/* {markers.map( marker => <Marker onCalloutPress={markerOnCalloutPressHandler} {...marker} />)} */}
+          {/* Draw the markers, or cluster marker */}
+          {markers.map( marker => renderMarker( marker ) )}
 
-          {circleProps.visible ? <Circle  {...circleProps} /> : null}
+          {/* Draw the circle if it's visible */}
+          {circleProps.visible && <Circle  {...circleProps} />}
+
         </MapView>
       </View>
 
-
+      {/* draw an info pane if there is a marker selected */}
       {selectedMarker && <InfoPane marker={selectedMarker} />}
-      
 
     </View>
   );
