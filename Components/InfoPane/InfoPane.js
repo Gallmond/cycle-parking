@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import { View, Text, StyleSheet } from "react-native"
+import { View, StyleSheet } from "react-native"
 import SecureIcon from './SecureIcon'
 import SpacesIcon from './SpacesIcon'
 import StandTypeIcon from './StandTypeIcon'
 import { Linking } from 'react-native'
 import RoutingIcon from './RoutingIcon'
+import MoreInfoIcon from './MoreInfoIcon'
 
 class InfoPane extends Component{
 
@@ -78,6 +79,7 @@ class InfoPane extends Component{
         <SpacesIcon spaces={this.props.marker.cyclepark.getSpaces()} />
         <SecureIcon secure={this.props.marker.cyclepark.isSecure()} />
         <RoutingIcon onPress={()=>{console.log('BOOKMARK ME');this.openGoogleMapsWithDirections()}} />
+        <MoreInfoIcon onPress={this.props.onShowInfoPane} />
       </View>
     ) 
   }

@@ -9,12 +9,15 @@
 import React from 'react';
 import { useState, useRef } from 'react';
 import {
+  Image,
+  Button,
   Dimensions,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useColorScheme,
   View,
 } from 'react-native';
@@ -32,10 +35,14 @@ import { Callout, Circle, Marker } from "react-native-maps";
 
 import { CycleParking } from "./cycleparking-tools/CycleParking";
 import InfoPane from './Components/InfoPane/InfoPane.js';
+import CycleParkingInformationPage from './CycleParkingInformationPage';
 
 import cycleparkingJson from './cycleparking-tools/cycleparking.json'
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson )
+
+// image sources
+const image_info = require(`./images/info.png`)
 
 // unchanging settings
 const WIN_WIDTH = Dimensions.get('window').width
@@ -99,6 +106,8 @@ const App = () => {
 
   // keep track of the region, we use this for latitudeDelta and calculating circle width
   const [mapRegion, setRegion] = useState(null)
+
+  const [displayInfo, setDisplayInfo] = useState(false)
 
   // camera
   const [mapCamera, setMapCamera] = useState({
@@ -211,8 +220,18 @@ const App = () => {
   };
 
 
+  const toggleInfoPane = (e) => {
+    console.log('toggleInfoPane')
+    setDisplayInfo( !displayInfo )
+  }
+
+
   const onMarkerPress = (e) => {
     setSelectedMarker( e );
+  }
+
+  const showInstructions = (e) => {
+    console.log('//TODO show instructions page')
   }
 
   //TODO show pane on marker selected
@@ -254,16 +273,47 @@ const App = () => {
           {circleProps.visible && <Circle  {...circleProps} />}
 
         </MapView>
+
+        {/* more info button */}
+        <TouchableOpacity style={styles.instructionsButton} onPress={showInstructions}>
+          <Image style={styles.instructionsButtonImage} source={image_info} />
+        </TouchableOpacity>
+
+        {
+        displayInfo
+        && selectedMarker
+        && <CycleParkingInformationPage 
+          style={{...StyleSheet.absoluteFillObject}} 
+          cyclePark={selectedMarker.cyclepark} 
+        />
+          }
+
       </View>
 
       {/* draw an info pane if there is a marker selected */}
-      {selectedMarker && <InfoPane marker={selectedMarker} />}
+      {selectedMarker && <InfoPane
+        marker={selectedMarker}
+        onShowInfoPane={toggleInfoPane}
+      />}
 
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  instructionsButton:{
+    width: '10%',
+    aspectRatio: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    backgroundColor: 'white',
+  },
+  instructionsButtonImage:{
+    resizeMode: 'center',
+    width: '100%',
+    height: '100%'
+  },
   container: {
     ...StyleSheet.absoluteFillObject,
     flex: 1,
