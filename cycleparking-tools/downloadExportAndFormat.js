@@ -108,7 +108,9 @@ const run = async () => {
       Photo2Url,                 // Photo2Url : "https://cycleassetimages.data.tfl.gov.uk/RWG014703_2.jpg",
       Provision,                 // Provision : "1",
       Secure,                    // Secure : "FALSE",
-    } = additionalPropertiesToObject( place ) 
+    } = additionalPropertiesToObject( additionalProperties ) 
+
+    // do some formatting (ie numeric strings to number 'TRUE'/'FALSE' to 1/0)
 
     // space to int
     let spaces = parseInt( NumberOfCycleParkingSpaces )
@@ -146,7 +148,8 @@ const run = async () => {
       hanger: hanger,
       tiered: tiered,
       locker: locker,
-      picurl: Photo1Url
+      picurl1: Photo1Url,
+      picurl2: Photo2Url
     })
 
   }
@@ -326,10 +329,10 @@ const decode = (geohash) => {
  * turn the additionalProperties array to a key => val object
  * @param {object} place 
  */
-const additionalPropertiesToObject = (place)=>{
+const additionalPropertiesToObject = ( additionalProperties )=>{
   const formatted = {}
-  for(let i = 0, l = place['additionalProperties'].length; i < l; i++){
-    let additionalProperty = place['additionalProperties'][i];
+  for(let i = 0, l = additionalProperties.length; i < l; i++){
+    let additionalProperty = additionalProperties[i];
     formatted[ additionalProperty['key'] ] = additionalProperty['value']
   }
   return formatted

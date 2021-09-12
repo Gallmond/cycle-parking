@@ -4,6 +4,13 @@ class CyclePark{
   constructor( formatted_object ){
     this.data = formatted_object
   }
+  setDistance = ( distance )=>{
+    this.data['distance'] = distance;
+    return this;
+  }
+  getDistance = () => {
+    return this.data['distance'] ?? null;
+  }
   getId = () => {
     return this.data['id'] ?? null;
   }
@@ -25,8 +32,11 @@ class CyclePark{
   getType = () => {
     return this.data['type'] ?? null;
   }
-  getPicurl = () => {
-    return this.data['picurl'] ?? null;
+  getPicurl1 = () => {
+    return this.data['picurl1'] ?? null;
+  }
+  getPicurl2 = () => {
+    return this.data['picurl2'] ?? null;
   }
   isHanger = () => {
     return this.data['hanger'] ?? null;
@@ -131,14 +141,17 @@ class CycleParking{
 
             const places_in_block = this.getData()[ geohash ]
             for (let ii = 0, ll = places_in_block.length; ii < ll; ii++) {
-              const place = places_in_block[ ii ]
+            const place = places_in_block[ ii ]
               const dist_from_centre = this.getDistBetweenTwoPoints([lat, lon] , [place.lat, place.lon])
               
               // skip it if we're outside of the circle
               if(dist_from_centre > radius_in_metres) continue
 
-              // otherwise collect it!
-              places.push( new CyclePark(place) )
+              // create object and set distance
+              const cyclePark = new CyclePark(place).setDistance( dist_from_centre );
+
+              // collect it
+              places.push( cyclePark )
             }
             
 

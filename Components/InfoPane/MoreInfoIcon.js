@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native"
 import InfoPaneIcon from './InfoPaneIcon'
+import themes from '../../Theme'
 
 const image_info = require(`./../../images/info.png`)
 
@@ -14,7 +15,12 @@ class MoreInfoIcon extends InfoPaneIcon{
       // backgroundColor: '#FBE9E8'
       view:{
         ...this.styles.view,
-        backgroundColor: '#FBE9E8'
+        // backgroundColor: '#FBE9E8'
+        backgroundColor: themes.main.secondary
+      },
+      text:{
+        ...this.styles.text,
+        color: themes.main.text.onSecondary
       }
     }])
     console.log('this.styles', this.styles);

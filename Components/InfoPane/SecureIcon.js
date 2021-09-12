@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, Image } from "react-native"
 import InfoPaneIcon from './InfoPaneIcon'
+import themes from '../../Theme'
 
 const image_locked = require(`./../../images/locked.png`)
 const image_unlocked = require(`./../../images/unlocked.png`)
@@ -13,7 +14,13 @@ class SecureIcon extends InfoPaneIcon{
     this.styles = StyleSheet.flatten([this.styles,{
       view: {
         ...this.styles.view,
-        backgroundColor: '#FDE293',
+        // backgroundColor: '#FDE293',
+        backgroundColor: themes.main.secondary
+      },
+      text:{
+        ...this.styles.text,
+        // 
+        color: themes.main.text.onSecondary
       }
     }])
 

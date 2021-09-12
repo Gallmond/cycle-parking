@@ -36,6 +36,7 @@ import { Callout, Circle, Marker } from "react-native-maps";
 import { CycleParking } from "./cycleparking-tools/CycleParking";
 import InfoPane from './Components/InfoPane/InfoPane.js';
 import CycleParkingInformationPage from './CycleParkingInformationPage';
+import InstructionsPage from './InstructionsPage';
 
 import cycleparkingJson from './cycleparking-tools/cycleparking.json'
 const cycleParking = new CycleParking( true );
@@ -107,7 +108,11 @@ const App = () => {
   // keep track of the region, we use this for latitudeDelta and calculating circle width
   const [mapRegion, setRegion] = useState(null)
 
+  // display the info pane
   const [displayInfo, setDisplayInfo] = useState(false)
+
+  // display the instructions page
+  const [instructionsPageVisible, setInstructionsPageVisible] = useState(false)
 
   // camera
   const [mapCamera, setMapCamera] = useState({
@@ -230,14 +235,23 @@ const App = () => {
     setSelectedMarker( e );
   }
 
+  const toggleInstructions = (e) => {
+    instructionsPageVisible
+      ? hideInstructions()
+      : showInstructions()
+  }
   const showInstructions = (e) => {
-    console.log('//TODO show instructions page')
+    setInstructionsPageVisible(true)
+  }
+  const hideInstructions = (e) => {
+    setInstructionsPageVisible(false)
   }
 
   //TODO show pane on marker selected
 
   return (
     <View style={styles.container}>
+
       <View style={styles.map_container}>
         <MapView
           ref={mapRef}
@@ -274,19 +288,16 @@ const App = () => {
 
         </MapView>
 
-        {/* more info button */}
-        <TouchableOpacity style={styles.instructionsButton} onPress={showInstructions}>
-          <Image style={styles.instructionsButtonImage} source={image_info} />
-        </TouchableOpacity>
+        
 
         {
-        displayInfo
-        && selectedMarker
-        && <CycleParkingInformationPage 
-          style={{...StyleSheet.absoluteFillObject}} 
-          cyclePark={selectedMarker.cyclepark} 
-        />
-          }
+          displayInfo
+          && selectedMarker
+          && <CycleParkingInformationPage 
+            style={{...StyleSheet.absoluteFillObject}} 
+            cyclePark={selectedMarker.cyclepark} 
+          />
+        }
 
       </View>
 
@@ -296,11 +307,22 @@ const App = () => {
         onShowInfoPane={toggleInfoPane}
       />}
 
+      {instructionsPageVisible && <InstructionsPage />}
+
+        {/* more info button */}
+        {/* <TouchableOpacity style={styles.instructionsButton} onPress={toggleInstructions}>
+          <Image style={styles.instructionsButtonImage} source={image_info} />
+        </TouchableOpacity> */}
+
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  instructionsPage: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'green'
+  },
   instructionsButton:{
     width: '10%',
     aspectRatio: 1,

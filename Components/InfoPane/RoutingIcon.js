@@ -1,5 +1,6 @@
 import React from 'react'
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native"
+import { View, Text, StyleSheet, Image, TouchableOpacity, ColorPropType } from "react-native"
+import themes from '../../Theme'
 import InfoPaneIcon from './InfoPaneIcon'
 
 const image_arrow = require(`./../../images/arrow.png`)
@@ -13,7 +14,12 @@ class RoutingIcon extends InfoPaneIcon{
     this.styles = StyleSheet.flatten([this.styles, {
       view:{
         ...this.styles.view,
-        backgroundColor: '#669DF6'
+        // backgroundColor: '#669DF6'
+        backgroundColor: themes.main.secondaryVariant
+      },
+      text:{
+        ...this.styles.text,
+        color: themes.main.text.onSecondary
       }
     }])
     console.log('this.styles', this.styles);

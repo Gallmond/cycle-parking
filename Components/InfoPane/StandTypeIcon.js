@@ -11,6 +11,8 @@ const image_post = require('./../../stands/post.png')
 const image_pstand = require('./../../stands/pstand.png')
 const image_wheelrack = require('./../../stands/wheelrack.png')
 
+import themes from '../../Theme'
+
 class StandTypeIcon extends InfoPaneIcon{
 
   constructor(props){
@@ -20,11 +22,13 @@ class StandTypeIcon extends InfoPaneIcon{
     this.styles = StyleSheet.flatten([this.styles,{
       view: {
         ...this.styles.view,
-        backgroundColor: '#1ea362',
+        // backgroundColor: '#1ea362',
+        backgroundColor: themes.main.secondary
       },
       text: {
         ...this.styles.text,
         color: 'white',
+        color: themes.main.text.onSecondary,
       }
     }])
 
