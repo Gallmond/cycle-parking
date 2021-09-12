@@ -235,8 +235,14 @@ class CycleParkingInformationPage extends Component{
 
         <View style={this.style.iconRow}>
 
-          <NiceInformativeIcon headingText={'Picture 1'} />
-          <NiceInformativeIcon headingText={'Picture 2'} />
+          <NiceInformativeIcon
+           onPress={()=>{console.log('//TODO show image1!')}}
+           headingText={'Picture 1'}
+          />
+          <NiceInformativeIcon 
+            onPress={()=>{console.log('//TODO show image2!')}}
+            headingText={'Picture 2'} 
+          />
 
         </View>
 

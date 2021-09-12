@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Text, ImageBackground, Image, StyleSheet } from "react-native";
+import { View, Text, ImageBackground, Image, StyleSheet, TouchableOpacity } from "react-native";
 import themes from "../../Theme";
 
 const image_prohibited = require('./../../images/prohibited.png')
@@ -11,6 +11,10 @@ const image_questionmark = require('./../../images/questionmark.png')
  *  subHeadingText
  *  backgroundImage
  *  foregroundImage
+ *  active
+ * optionally pass:
+ * - children to the element to render those instead of the image section
+ * - onPress event to turn it into a tappable button
  */
 class NiceInformativeIcon extends Component{
 
@@ -85,15 +89,18 @@ class NiceInformativeIcon extends Component{
   render(){
 
     return(
-      <View style={[this.styles.main, this.props.style]} opacity={this.active ? 1 : 0.3} >
-        {/* <View style={this.styles.textContainer} > */}
-          {this.headingText && this.getHeader()}
-          {this.subHeadingText && this.getSubheader()}
-        {/* </View> */}
-        <View style={this.styles.imageContainer} >
-          {this.props.children ? this.props.children : this.getImageSection()}
+      <TouchableOpacity onPress={this.props.onPress} disabled={this.props.onPress ? false : true} >
+        <View style={[this.styles.main, this.props.style]} opacity={this.active ? 1 : 0.3} >
+          {/* <View style={this.styles.textContainer} > */}
+            {this.headingText && this.getHeader()}
+            {this.subHeadingText && this.getSubheader()}
+          {/* </View> */}
+          <View style={this.styles.imageContainer} >
+            {this.props.children ? this.props.children : this.getImageSection()}
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
+      
     )
   }
 
