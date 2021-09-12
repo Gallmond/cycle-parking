@@ -15,7 +15,7 @@ class RoutingIcon extends InfoPaneIcon{
       view:{
         ...this.styles.view,
         // backgroundColor: '#669DF6'
-        backgroundColor: themes.main.secondaryVariant
+        backgroundColor: themes.main.secondary
       },
       text:{
         ...this.styles.text,

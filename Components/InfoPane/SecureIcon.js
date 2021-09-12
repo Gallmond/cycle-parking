@@ -15,12 +15,12 @@ class SecureIcon extends InfoPaneIcon{
       view: {
         ...this.styles.view,
         // backgroundColor: '#FDE293',
-        backgroundColor: themes.main.secondary
+        backgroundColor: themes.main.primary
       },
       text:{
         ...this.styles.text,
         // 
-        color: themes.main.text.onSecondary
+        color: themes.main.text.onPrimary
       }
     }])
 

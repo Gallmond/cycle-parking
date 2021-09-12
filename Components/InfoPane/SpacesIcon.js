@@ -12,12 +12,12 @@ class SpacesIcon extends InfoPaneIcon{
       view: {
         ...this.styles.view,
         // backgroundColor: '#185ABC',
-        backgroundColor: themes.main.secondaryVariant
+        backgroundColor: themes.main.primary
       },
       text: {
         ...this.styles.text,
         // color: 'white',
-        color: themes.main.text.onSecondary
+        color: themes.main.text.onPrimary
       },
       spacesContainer: {
         flex:0.8, justifyContent: 'center'
