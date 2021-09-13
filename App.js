@@ -107,10 +107,28 @@ const App = () => {
 
   // load bookmarks only once
   useEffect(() => {
+    updateDrawableBookmarks();
+  }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
+  
+  const updateDrawableBookmarks = () => {
     userSettings.get('bookmarks').then( cycleParkIds => {
       setBookmarkedCycleParkIds(cycleParkIds)
-    }) 
-  }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
+
+      console.log('cycleParkIds', cycleParkIds);
+
+      // check if any of these exist in the already drawn searchedMarkers
+      const temp_searchedMarkers = [...searchedMarkers]
+      for (let i = temp_searchedMarkers.length - 1; i >= 0; i--) {
+        if( cycleParkIds.indexOf(temp_searchedMarkers[i].cyclepark.getId()) !== -1 ){
+          temp_searchedMarkers.splice(i, 1)
+        }
+      }
+      setSearchedMarkers( temp_searchedMarkers )
+
+      cycleParking.getCycleParksById( cycleParkIds ).then( putBookmarkMarkersOnMap ).catch( console.log ) 
+    })
+  }
+
 
   // store the currently selected marker here
   const [selectedMarker, setSelectedMarker] = useState(null)
@@ -167,8 +185,8 @@ const App = () => {
   // }
   
   // some formatting to return marker
-  const renderMarker = ( marker ) => {
-    const markerprops = {...marker, pinColor: marker.bookmarked ? 'blue' : 'red'}
+  const renderMarker = ( marker, highlight_pin = false ) => {
+    const markerprops = {...marker, pinColor: highlight_pin ? 'blue' : 'red'}
     return ( 
       <Marker onPress={()=>{onMarkerPress( marker )}} {...markerprops} >
         <Callout title={marker.title} description={marker.description} />
@@ -217,22 +235,26 @@ const App = () => {
   }
 
 
+  const formatMarkerFromCyclePark = ( cyclepark_object ) => {
+    return {
+      id: cyclepark_object.getId(), // for the react id
+      key: cyclepark_object.getId(), // for the react key
+      coordinate: {
+        latitude: cyclepark_object.getLat(),
+        longitude: cyclepark_object.getLon()
+      },
+      cyclepark: cyclepark_object,
+      title: cyclepark_object.getName(),
+      description: `${cyclepark_object.getType()} (${cyclepark_object.getSpaces()} spaces) (${!cyclepark_object.isSecure() ? 'not ' : ''}secure)`
+    }
+  }
+
+
   // create markers for a given set of CyclePark objects
   const putBookmarkMarkersOnMap = ( cycleparks ) => {
     const new_markers = []
     cycleparks.forEach( cyclepark => {
-        new_markers.push({
-        bookmarked: true,
-        id: cyclepark.getId(), // for the react id
-        key: cyclepark.getId(), // for the react key
-        coordinate: {
-          latitude: cyclepark.getLat(),
-          longitude: cyclepark.getLon()
-        },
-        cyclepark: cyclepark,
-        title: cyclepark.getName(),
-        description: `${cyclepark.getType()} (${cyclepark.getSpaces()} spaces) (${!cyclepark.isSecure() ? 'not ' : ''}secure)`
-      })
+        new_markers.push( formatMarkerFromCyclePark(cyclepark) )
     })
     setBookmarkedMarkers( new_markers )
   }
@@ -241,22 +263,9 @@ const App = () => {
   const putCycleParkMarkersOnMap = ( cycleparks, are_bookmarks = false ) => {
     const new_markers = []
     cycleparks.forEach( cyclepark => {
-    
       // skip any that exist in the bookmarks
       if( bookmarkedCycleParkIds.includes( cyclepark.getId() ) ) return;
-
-      new_markers.push({
-        bookmarked: are_bookmarks,
-        id: cyclepark.getId(), // for the react id
-        key: cyclepark.getId(), // for the react key
-        coordinate: {
-          latitude: cyclepark.getLat(),
-          longitude: cyclepark.getLon()
-        },
-        cyclepark: cyclepark,
-        title: cyclepark.getName(),
-        description: `${cyclepark.getType()} (${cyclepark.getSpaces()} spaces) (${!cyclepark.isSecure() ? 'not ' : ''}secure)`
-      })
+      new_markers.push( formatMarkerFromCyclePark(cyclepark) )
     })
     setSearchedMarkers( new_markers )
   }
@@ -279,7 +288,7 @@ const App = () => {
       latitude: lat,
       longitude: lon,
     };
-    const new_radius = Math.min(latitudeDeltaToMetres(latitudeDelta) / 5, MAX_CIRCLE_RADIUS_METRES);
+    const new_radius = Math.min(latitudeDeltaToMetres(latitudeDelta) / 3, MAX_CIRCLE_RADIUS_METRES);
     setCircleProps(prevState => {
       const newState = {
         ...prevState,
@@ -301,22 +310,6 @@ const App = () => {
 
   const onMarkerPress = (e) => {
     setSelectedMarker( e );
-  }
-
-
-  const getAllMarkers = () => {
-
-    const search_result_markers = searchedMarkers
-
-    const bookmarked_markers = []
-
-
-    bookmarkedCycleParkIds.map( id => {
-      bookmarked_markers.push()
-    })
-
-    //TODO do this
-    return searchedMarkers
   }
 
 
@@ -354,7 +347,7 @@ const App = () => {
           {/* Draw the markers, or cluster marker */}
           {/* {getAllMarkers().map( marker => renderMarker( marker ) )} */}
           {searchedMarkers.map( marker => renderMarker( marker ) )}
-          {bookmarkedMarkers.map( marker => renderMarker( marker ) )}
+          {bookmarkedMarkers.map( marker => renderMarker( marker, true ) )}
 
           {/* Draw the circle if it's visible */}
           {circleProps.visible && <Circle  {...circleProps} />}
@@ -366,7 +359,8 @@ const App = () => {
           && selectedMarker
           && <CycleParkingInformationPage 
             style={{...StyleSheet.absoluteFillObject}} 
-            cyclePark={selectedMarker.cyclepark} 
+            cyclePark={selectedMarker.cyclepark}
+            onBookmarksChanged={updateDrawableBookmarks} 
           />
         }
 

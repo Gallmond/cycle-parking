@@ -191,6 +191,8 @@ class CycleParkingInformationPage extends Component{
     console.log('bookmarksSet', bookmarksSet);
     userSettings.set( 'bookmarks', Array.from( bookmarksSet ) );
 
+    if(this.props.onBookmarksChanged) this.props.onBookmarksChanged()
+
     this.updateBookmarkButton( added )
   }
 
