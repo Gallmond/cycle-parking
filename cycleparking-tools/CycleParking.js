@@ -86,6 +86,26 @@ class CycleParking{
     return this
   }
 
+
+  /**
+   * returns with an array of CyclePark
+   *
+   * @memberof CycleParking
+   */
+  getCycleParksById = ( place_ids ) => {
+    return new Promise((resolve,reject)=>{
+      const found_cycleParks = []
+      for(const geohash in this.getData()){
+        for(var i = 0, l = this.getData()[ geohash ].length; i < l; i++){
+          var place = this.getData()[ geohash ][i];
+          if(place_ids.indexOf( place['id'] ) !== -1){
+            found_cycleParks.push( new CyclePark( place ) )
+          }
+        }
+      }
+      resolve( found_cycleParks )
+    });
+  }
   /**
    * With the new format this has to loop through the entire array so return a promise instead
    * @param {string} place_id 

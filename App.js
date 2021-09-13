@@ -101,8 +101,16 @@ const App = () => {
   const mapRef = useRef(null);
 
   // all markers
-  const [markers, setMarkers] = useState([])
-  const [gotBookmarks, setGotBookmarks] = useState(false)
+  const [searchedMarkers, setSearchedMarkers] = useState([])
+  const [bookmarkedMarkers, setBookmarkedMarkers] = useState([])
+  const [bookmarkedCycleParkIds, setBookmarkedCycleParkIds] = useState([])
+
+  // load bookmarks only once
+  useEffect(() => {
+    userSettings.get('bookmarks').then( cycleParkIds => {
+      setBookmarkedCycleParkIds(cycleParkIds)
+    }) 
+  }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
 
   // store the currently selected marker here
   const [selectedMarker, setSelectedMarker] = useState(null)
@@ -136,27 +144,27 @@ const App = () => {
   })
 
   // get default markers
-  const setBookmarkedMarkers = () => {
-    userSettings.get('bookmarks').then(array => {
-      if (!Array.isArray(array)) return;
+  // const setBookmarkedMarkers = () => {
+  //   userSettings.get('bookmarks').then(array => {
+  //     if (!Array.isArray(array)) return;
 
-      console.log(`setting ${array.length} default markers`);
+  //     console.log(`setting ${array.length} default markers`);
 
-      const existingPromises = [];
-      array.forEach(id => {
-        existingPromises.push(cycleParking.getCycleParkById(id));
-      });
+  //     const existingPromises = [];
+  //     array.forEach(id => {
+  //       existingPromises.push(cycleParking.getCycleParkById(id));
+  //     });
 
-      Promise.all(existingPromises).then(cycleParks => {
-        putCycleParkMarkersOnMap(cycleParks, true);
-        setGotBookmarks( true )
-      });
-    });
-  };
+  //     Promise.all(existingPromises).then(cycleParks => {
+  //       putCycleParkMarkersOnMap(cycleParks, true);
+  //       setGotBookmarks( true )
+  //     });
+  //   });
+  // };
 
-  if(!gotBookmarks){
-    setBookmarkedMarkers();
-  }
+  // if(!gotBookmarks){
+  //   setBookmarkedMarkers();
+  // }
   
   // some formatting to return marker
   const renderMarker = ( marker ) => {
@@ -185,6 +193,8 @@ const App = () => {
 
   // when the map itself is pressed
   const onPressHandler = async (e) => {
+    console.log('map tapped')
+
 
     const tapped_lat = e.nativeEvent.coordinate.latitude
     const tapped_lon = e.nativeEvent.coordinate.longitude
@@ -195,6 +205,9 @@ const App = () => {
     // get cycle parking and add it to the map
     cycleParking.getCycleParksInRange( tapped_lat, tapped_lon, radius ).then( putCycleParkMarkersOnMap ).catch( console.log ) 
     
+    // put bookmarked markers on
+    cycleParking.getCycleParksById( bookmarkedCycleParkIds ).then( putBookmarkMarkersOnMap ).catch( console.log ) 
+
     // centre camera here
     setCameraOver(tapped_lat, tapped_lon, 500)
 
@@ -203,11 +216,35 @@ const App = () => {
 
   }
 
+
+  // create markers for a given set of CyclePark objects
+  const putBookmarkMarkersOnMap = ( cycleparks ) => {
+    const new_markers = []
+    cycleparks.forEach( cyclepark => {
+        new_markers.push({
+        bookmarked: true,
+        id: cyclepark.getId(), // for the react id
+        key: cyclepark.getId(), // for the react key
+        coordinate: {
+          latitude: cyclepark.getLat(),
+          longitude: cyclepark.getLon()
+        },
+        cyclepark: cyclepark,
+        title: cyclepark.getName(),
+        description: `${cyclepark.getType()} (${cyclepark.getSpaces()} spaces) (${!cyclepark.isSecure() ? 'not ' : ''}secure)`
+      })
+    })
+    setBookmarkedMarkers( new_markers )
+  }
+  
   // create markers for a given set of CyclePark objects
   const putCycleParkMarkersOnMap = ( cycleparks, are_bookmarks = false ) => {
     const new_markers = []
     cycleparks.forEach( cyclepark => {
     
+      // skip any that exist in the bookmarks
+      if( bookmarkedCycleParkIds.includes( cyclepark.getId() ) ) return;
+
       new_markers.push({
         bookmarked: are_bookmarks,
         id: cyclepark.getId(), // for the react id
@@ -221,9 +258,13 @@ const App = () => {
         description: `${cyclepark.getType()} (${cyclepark.getSpaces()} spaces) (${!cyclepark.isSecure() ? 'not ' : ''}secure)`
       })
     })
-
-    setMarkers( new_markers )
+    setSearchedMarkers( new_markers )
   }
+
+
+  // const getAllMarkers = () => {
+  //   return markers;
+  // }
 
 
   /**
@@ -262,19 +303,22 @@ const App = () => {
     setSelectedMarker( e );
   }
 
-  const toggleInstructions = (e) => {
-    instructionsPageVisible
-      ? hideInstructions()
-      : showInstructions()
-  }
-  const showInstructions = (e) => {
-    setInstructionsPageVisible(true)
-  }
-  const hideInstructions = (e) => {
-    setInstructionsPageVisible(false)
+
+  const getAllMarkers = () => {
+
+    const search_result_markers = searchedMarkers
+
+    const bookmarked_markers = []
+
+
+    bookmarkedCycleParkIds.map( id => {
+      bookmarked_markers.push()
+    })
+
+    //TODO do this
+    return searchedMarkers
   }
 
-  //TODO show pane on marker selected
 
   return (
     <View style={styles.container}>
@@ -308,14 +352,14 @@ const App = () => {
         >
 
           {/* Draw the markers, or cluster marker */}
-          {markers.map( marker => renderMarker( marker ) )}
+          {/* {getAllMarkers().map( marker => renderMarker( marker ) )} */}
+          {searchedMarkers.map( marker => renderMarker( marker ) )}
+          {bookmarkedMarkers.map( marker => renderMarker( marker ) )}
 
           {/* Draw the circle if it's visible */}
           {circleProps.visible && <Circle  {...circleProps} />}
 
         </MapView>
-
-        
 
         {
           displayInfo
@@ -333,13 +377,6 @@ const App = () => {
         marker={selectedMarker}
         onShowInfoPane={toggleInfoPane}
       />}
-
-      {instructionsPageVisible && <InstructionsPage />}
-
-        {/* more info button */}
-        {/* <TouchableOpacity style={styles.instructionsButton} onPress={toggleInstructions}>
-          <Image style={styles.instructionsButtonImage} source={image_info} />
-        </TouchableOpacity> */}
 
     </View>
   );
