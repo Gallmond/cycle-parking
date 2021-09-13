@@ -39,6 +39,7 @@ class CycleParkingInformationPage extends Component{
     this.state = {
       showImageSection: false,
       imageUrl: false,
+      cycleParkIsBookmarked: null,
     }
 
     this.style = StyleSheet.create({
@@ -137,7 +138,9 @@ class CycleParkingInformationPage extends Component{
     // })
 
     // which bookmark button to show?
-    // this.updateBookmarkButton()
+    userSettings.get( 'bookmarks' ).then( array => {
+      this.updateBookmarkButton( array.indexOf( this.props.cyclePark.getId() ) !== -1 )
+    })
 
   }
 
@@ -165,70 +168,38 @@ class CycleParkingInformationPage extends Component{
 
   }
   
-  // updateBookmarkButton(){
-  //   this.isBookmarked( this.props.cyclePark.getId() ).then( bookmark_exists => {
-  //     this.setState({...this.state,
-  //       gotBookmark: true,
-  //       bookmarkExists: bookmark_exists
-  //     })
-  //   })
-  // }
+  BookmarkSet( data ){
+    return Array.isArray(data) ? new Set(data) : new Set([]);
+  }
 
-  // onImageErrorHandler(e){
-  //   const error = e.nativeEvent
-  //   console.error('error', error);
-  //   Alert.alert('Error', `Image failed to load`)
-  // }
+  async bookmarkButtonOnPress(){
+  
+    const cyclepark_id = this.props.cyclePark.getId()
+    console.log('bookmarkButtonOnPress')
+    const bookmarksSet = this.BookmarkSet( await userSettings.get( 'bookmarks' ) )
 
-  // toggleImage(){
-  //   this.state.showImage
-  //     ? this.hideImage()
-  //     : this.showImage()
-  // }
-  // showImage(){this.setState({...this.state, showImage: true})}
-  // hideImage(){this.setState({...this.state, showImage: false})}
+    // if we already have it, remove it
+    let added = null;
+    if(bookmarksSet.has( cyclepark_id )){
+      bookmarksSet.delete( cyclepark_id )
+      added = false
+    }else{
+      bookmarksSet.add( cyclepark_id )
+      added = true
+    }
 
-  // alwaysShowImage(){
-  //   this.showImage()
-  //   userSettings.set( 'showImage', true )
-  // }
-  // dontAlwaysShowImage(){
-  //   this.hideImage()
-  //   userSettings.set( 'showImage', false )
-  // }
+    console.log('bookmarksSet', bookmarksSet);
+    userSettings.set( 'bookmarks', Array.from( bookmarksSet ) );
 
-  // toggleModal(){
-  //   this.setState({...this.state, showModal: !this.state.showModal})
-  // }
+    this.updateBookmarkButton( added )
+  }
 
-  // //TODO check this is working, button isn't changing
-  // bookmarkButtonOnPress(e){
-  //   const cyclePark = this.props.cyclePark
-  //   const id = cyclePark.getId()
-  //   this.state.bookmarkExists ? this.removeBookmark( id ) : this.addBookmark( id )  
-  // }
-
-  // BookmarkSet( data ){
-  //   return Array.isArray(data) ? new Set(data) : new Set([]);
-  // }
-
-  // async isBookmarked( cyclepark_id ){
-  //   return this.BookmarkSet( await userSettings.get( 'bookmarks' ) ).has( cyclepark_id )
-  // }
-
-  // async removeBookmark ( cyclepark_id ){
-  //   const bookmarksSet = this.BookmarkSet( await userSettings.get( 'bookmarks' ) )
-  //   bookmarksSet.delete( cyclepark_id )
-  //   userSettings.set( 'bookmarks', Array.from( bookmarksSet ) );
-  //   this.updateBookmarkButton()
-  // }
-
-  // async addBookmark( cyclepark_id ){
-  //   const bookmarksSet = this.BookmarkSet( await userSettings.get( 'bookmarks' ) )
-  //   bookmarksSet.add( cyclepark_id )
-  //   userSettings.set( 'bookmarks', Array.from( bookmarksSet ) );
-  //   this.updateBookmarkButton()
-  // }
+  updateBookmarkButton( added ){
+    console.log('updateBoookmarkButton', added);
+    this.setState({...this.state,
+      cycleParkIsBookmarked: added
+    })
+  }
 
   // warnUserAboutIm = () => {
   //   Alert.alert(
@@ -282,7 +253,11 @@ class CycleParkingInformationPage extends Component{
             onPress={()=>{this.openImageSectionToImage( cyclePark.getPicurl2() )}}
           />
 
-          <BookmarkInfo onPress={()=>{console.log('//TODO bookmark me')}} />
+          <BookmarkInfo
+            key={this.state.cycleParkIsBookmarked ? 'Remove' : 'Add'} // component does not rerender without thi
+            subHeadingText={this.state.cycleParkIsBookmarked ? 'Remove' : 'Add'}
+            onPress={()=>{this.bookmarkButtonOnPress()}}
+          />
 
         </View>
 

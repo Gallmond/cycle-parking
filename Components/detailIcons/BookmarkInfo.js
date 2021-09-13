@@ -13,7 +13,7 @@ class BookmarkInfo extends Component{
 
     this.state = {
       headingText: 'Bookmark',
-      subHeadingText: null,
+      subHeadingText: this.props.subHeadingText,
       backgroundImage: this.getImage( ) ,
       foregroundImage: null,
       active: true,

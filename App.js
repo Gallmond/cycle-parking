@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Image,
   Button,
@@ -39,6 +39,7 @@ import CycleParkingInformationPage from './CycleParkingInformationPage';
 import InstructionsPage from './InstructionsPage';
 
 import cycleparkingJson from './cycleparking-tools/cycleparking.json'
+import userSettings from './UserSettings';
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson )
 
@@ -101,6 +102,7 @@ const App = () => {
 
   // all markers
   const [markers, setMarkers] = useState([])
+  const [gotBookmarks, setGotBookmarks] = useState(false)
 
   // store the currently selected marker here
   const [selectedMarker, setSelectedMarker] = useState(null)
@@ -133,10 +135,34 @@ const App = () => {
     radius:100
   })
 
+  // get default markers
+  const setBookmarkedMarkers = () => {
+    userSettings.get('bookmarks').then(array => {
+      if (!Array.isArray(array)) return;
+
+      console.log(`setting ${array.length} default markers`);
+
+      const existingPromises = [];
+      array.forEach(id => {
+        existingPromises.push(cycleParking.getCycleParkById(id));
+      });
+
+      Promise.all(existingPromises).then(cycleParks => {
+        putCycleParkMarkersOnMap(cycleParks, true);
+        setGotBookmarks( true )
+      });
+    });
+  };
+
+  if(!gotBookmarks){
+    setBookmarkedMarkers();
+  }
+  
   // some formatting to return marker
   const renderMarker = ( marker ) => {
+    const markerprops = {...marker, pinColor: marker.bookmarked ? 'blue' : 'red'}
     return ( 
-      <Marker onPress={()=>{onMarkerPress( marker )}} {...marker} >
+      <Marker onPress={()=>{onMarkerPress( marker )}} {...markerprops} >
         <Callout title={marker.title} description={marker.description} />
       </Marker> 
     )
@@ -178,11 +204,12 @@ const App = () => {
   }
 
   // create markers for a given set of CyclePark objects
-  const putCycleParkMarkersOnMap = ( cycleparks ) => {
+  const putCycleParkMarkersOnMap = ( cycleparks, are_bookmarks = false ) => {
     const new_markers = []
     cycleparks.forEach( cyclepark => {
     
       new_markers.push({
+        bookmarked: are_bookmarks,
         id: cyclepark.getId(), // for the react id
         key: cyclepark.getId(), // for the react key
         coordinate: {
