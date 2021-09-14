@@ -39,9 +39,10 @@ import CycleParkingInformationPage from './CycleParkingInformationPage';
 import InstructionsPage from './InstructionsPage';
 
 import cycleparkingJson from './cycleparking-tools/cycleparking.json'
+import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json'
 import userSettings from './UserSettings';
 const cycleParking = new CycleParking( true );
-cycleParking.setData( cycleparkingJson )
+cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
 
 // image sources
 const image_info = require(`./images/info.png`)
@@ -114,8 +115,6 @@ const App = () => {
     userSettings.get('bookmarks').then( cycleParkIds => {
       setBookmarkedCycleParkIds(cycleParkIds)
 
-      console.log('cycleParkIds', cycleParkIds);
-
       // check if any of these exist in the already drawn searchedMarkers
       const temp_searchedMarkers = [...searchedMarkers]
       for (let i = temp_searchedMarkers.length - 1; i >= 0; i--) {
@@ -161,28 +160,6 @@ const App = () => {
     radius:100
   })
 
-  // get default markers
-  // const setBookmarkedMarkers = () => {
-  //   userSettings.get('bookmarks').then(array => {
-  //     if (!Array.isArray(array)) return;
-
-  //     console.log(`setting ${array.length} default markers`);
-
-  //     const existingPromises = [];
-  //     array.forEach(id => {
-  //       existingPromises.push(cycleParking.getCycleParkById(id));
-  //     });
-
-  //     Promise.all(existingPromises).then(cycleParks => {
-  //       putCycleParkMarkersOnMap(cycleParks, true);
-  //       setGotBookmarks( true )
-  //     });
-  //   });
-  // };
-
-  // if(!gotBookmarks){
-  //   setBookmarkedMarkers();
-  // }
   
   // some formatting to return marker
   const renderMarker = ( marker, highlight_pin = false ) => {
@@ -211,14 +188,14 @@ const App = () => {
 
   // when the map itself is pressed
   const onPressHandler = async (e) => {
-    console.log('map tapped')
-
 
     const tapped_lat = e.nativeEvent.coordinate.latitude
     const tapped_lon = e.nativeEvent.coordinate.longitude
 
     // draw circle
     const radius = drawCircleToFitWidth(tapped_lat, tapped_lon)
+
+    console.log(`map tapped ${tapped_lat}, ${tapped_lon} radius: ${radius}`)
 
     // get cycle parking and add it to the map
     cycleParking.getCycleParksInRange( tapped_lat, tapped_lon, radius ).then( putCycleParkMarkersOnMap ).catch( console.log ) 
@@ -303,7 +280,6 @@ const App = () => {
 
 
   const toggleInfoPane = (e) => {
-    console.log('toggleInfoPane')
     setDisplayInfo( !displayInfo )
   }
 

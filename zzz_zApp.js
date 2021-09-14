@@ -42,25 +42,14 @@ const App = () => {
     zoom: 16, // 0 - 20
   });
 
-
   /**
    * user has long pressed
    */
   const onLongPressHandler = async (e) => {
-    // {
-    //   "coordinate":  {"latitude": 51.48941074067783,"longitude": -0.26252321898937225,},
-    //   "position":  {"x": 387,"y": 696,},
-    // }
-    console.log("onLongPressHandler e.nativeEvent", e.nativeEvent);
-
-
     const lat = e.nativeEvent.coordinate.latitude
     const lon = e.nativeEvent.coordinate.longitude
     const range = 100
     const places = await cycleParking.getCycleParksInRange( lat, lon, range )
-    console.log('places', places)
-
-
   }
 
   const drawCircleToFitWidth = (latlon, latitudeDelta) => {
@@ -69,8 +58,6 @@ const App = () => {
       longitude: latlon[1],
     }
     const new_radius = Math.min(latitudeDeltaToMetres( latitudeDelta ) / 5, 400) 
-    console.log('new_centre', new_centre)
-    console.log('new_radius', new_radius)
     setCircleProps( prevState => {
       const newState = {
         ...prevState,
@@ -88,9 +75,7 @@ const App = () => {
   const onRegionChangeCompleteHandler = async (e, event_info) => {
     if (event_info["isGesture"] || true) {
       // only do this if the USER caused this (ie dragged the map)
-      console.log("onRegionChangeCompleteHandler", e);
       const currentCamera = await mapRef.current.getCamera();
-      console.log("currentCamera", currentCamera);
       setMapCamera((prevState) => {
         const newState = {
           ...prevState,
@@ -100,7 +85,6 @@ const App = () => {
             longitude: e.longitude,
           },
         };
-        console.log("setting new camera", newState);
         drawCircleToFitWidth( [e.latitude, e.longitude], e.latitudeDelta )
         return newState;
       });

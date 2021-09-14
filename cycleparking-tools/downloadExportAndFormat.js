@@ -16,6 +16,7 @@ const https = require('https');
 const readline = require('readline');
 const { formatWithOptions } = require('util');
 const { parse } = require('path');
+const { URL } = require('url');
 
 function askQuestion(query) {
     const rl = readline.createInterface({
@@ -33,6 +34,12 @@ function askQuestion(query) {
 
 const run = async () => {
   
+  const large_strings = {
+    names: new Set(), // Hammersmith & Fulham
+    types: new Set(), // Sheffield
+    imghosts: new Set(), // https://cycleassetimages.data.tfl.gov.uk
+  }
+
   const lines = [
     "Download new TFL Export, or provide existing?",
     "\t[1] Download new (might take a while, 67mb or so)",
@@ -133,6 +140,25 @@ const run = async () => {
 
     const geohash = encode( lat, lon, 9 ) // this is as accurate as the TFL data gets anyway
 
+    // format large strings
+    const pictureOrigin1 = new URL( Photo1Url ).origin
+    const pictureOrigin2 = new URL( Photo2Url ).origin
+    large_strings.imghosts.add( pictureOrigin1 )
+    large_strings.imghosts.add( pictureOrigin2 )
+    large_strings.names.add( commonName )
+    large_strings.types.add( CycleStandType )
+
+    // get the 'id' of these strings (ie where they appear in the set if it was an array)
+    const host_id1 = Array.from( large_strings.imghosts ).indexOf( pictureOrigin1 ).toString()
+    const host_id2 = Array.from( large_strings.imghosts ).indexOf( pictureOrigin2 ).toString()
+    const commonName_id = Array.from( large_strings.names ).indexOf( commonName ).toString()
+    const CycleStandType_id = Array.from( large_strings.types ).indexOf( CycleStandType ).toString()
+
+    let newHost1 = Photo1Url.replace( pictureOrigin1, `#${host_id1}` )
+    let newHost2 = Photo2Url.replace( pictureOrigin2, `#${host_id2}` )
+
+    // replace name with the id like #0
+
     if( formatted[ geohash ] === undefined ) formatted[ geohash ] = []
 
     formatted[ geohash ].push({
@@ -140,21 +166,40 @@ const run = async () => {
       geohash: geohash,
       lat: lat,
       lon: lon,
-      name:commonName,
+      name: commonName_id, //commonName,
       spaces:spaces,
       secure:secure,
       covered:covered,
-      type: CycleStandType,
+      type: CycleStandType_id, //CycleStandType,
       hanger: hanger,
       tiered: tiered,
       locker: locker,
-      picurl1: Photo1Url,
-      picurl2: Photo2Url
+      picurl1: newHost1, //Photo1Url,
+      picurl2: newHost2, //Photo2Url
     })
 
   }
   // **************************************************************************
   // **************************************************************************
+
+  console.log('large_strings', large_strings);
+
+  // format the strings file
+  const enumFileContent = {};
+  for(let key in large_strings){
+    enumFileContent[ key ] = {}
+    let arr = Array.from( large_strings[ key ] )
+    for(var i = 0, l = arr.length; i < l; i++){
+      enumFileContent[ key ][ i.toString() ] = arr[i]
+    }
+  }
+  console.log('enumFileContent', enumFileContent);
+
+  const formatted_temp_file_enums = `${os.tmpdir()}/cycleparking_formatted_enums.json`
+  fs.writeFile( formatted_temp_file_enums, JSON.stringify(enumFileContent), {encoding: 'utf-8'}, (err) => {
+    if(err) throw err;
+    console.log(`\twrote file ${formatted_temp_file_enums}`)
+  })
 
   // save
   const formatted_temp_file = `${os.tmpdir()}/cycleparking_formatted.json`

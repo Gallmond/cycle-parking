@@ -22,8 +22,6 @@ class RoutingIcon extends InfoPaneIcon{
         color: themes.main.text.onSecondary
       }
     }])
-    console.log('this.styles', this.styles);
-
   }
 
   getImage(){

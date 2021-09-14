@@ -89,53 +89,7 @@ class CycleParkingInformationPage extends Component{
         width: '100%',
         height: '100%',
       }
-
-
-
-      // imageContainer:{
-      //   borderWidth: 5,
-      //   borderColor: 'black',
-      //   width: '100%',
-      //   height: '50%',
-      //   flexDirection: 'row'
-      // },
-      // imageFrame:{
-      //   flex: 1,
-      // },
-      // image:{
-      //   resizeMode: 'center',
-      //   width: '100%',
-      //   height: '100%',
-      // },
-      // bookmarkButton:{
-      //   width: '20%',
-      //   aspectRatio: 1,
-      //   position: 'absolute',
-      //   bottom: 0,
-      //   right: 0,
-      //   backgroundColor: 'white',
-      //   flexDirection: 'column'
-      // },
-      // bookmarkButtonImage:{
-      //   resizeMode: 'center',
-      //   width: '100%',
-      //   flex: 0.8
-      // },
-      // bookmarkButtonText:{
-      //   textAlign: 'center',
-      //   color: 'black',
-      //   flex: 0.2
-      // },
     })
-
-    
-
-
-    // check user settings
-    // userSettings.get( 'showImage' ).then( data => {
-    //   console.log('userSettings.get( \'showImage\' )', data);
-    //   this.setState({...this.state, showImage: data})
-    // })
 
     // which bookmark button to show?
     userSettings.get( 'bookmarks' ).then( array => {
@@ -175,7 +129,6 @@ class CycleParkingInformationPage extends Component{
   async bookmarkButtonOnPress(){
   
     const cyclepark_id = this.props.cyclePark.getId()
-    console.log('bookmarkButtonOnPress')
     const bookmarksSet = this.BookmarkSet( await userSettings.get( 'bookmarks' ) )
 
     // if we already have it, remove it
@@ -188,7 +141,6 @@ class CycleParkingInformationPage extends Component{
       added = true
     }
 
-    console.log('bookmarksSet', bookmarksSet);
     userSettings.set( 'bookmarks', Array.from( bookmarksSet ) );
 
     if(this.props.onBookmarksChanged) this.props.onBookmarksChanged()
@@ -197,7 +149,6 @@ class CycleParkingInformationPage extends Component{
   }
 
   updateBookmarkButton( added ){
-    console.log('updateBoookmarkButton', added);
     this.setState({...this.state,
       cycleParkIsBookmarked: added
     })

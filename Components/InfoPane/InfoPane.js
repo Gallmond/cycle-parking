@@ -12,8 +12,6 @@ class InfoPane extends Component{
   constructor(props){
     super(props)
 
-    console.log('this.props', this.props);
-
     this.state = {
       is_hidden: true,
       height: '10%',
@@ -27,7 +25,6 @@ class InfoPane extends Component{
     return this
   }
   show(){
-    console.log('show', this.state)
     const is_hidden = false
     this.setState({...this.state, is_hidden: is_hidden}, this.updateVisible)
     return this
@@ -78,7 +75,7 @@ class InfoPane extends Component{
         <StandTypeIcon standtype={this.props.marker.cyclepark.getType()} />
         <SpacesIcon spaces={this.props.marker.cyclepark.getSpaces()} />
         <SecureIcon secure={this.props.marker.cyclepark.isSecure()} />
-        <RoutingIcon onPress={()=>{console.log('BOOKMARK ME');this.openGoogleMapsWithDirections()}} />
+        <RoutingIcon onPress={()=>{this.openGoogleMapsWithDirections()}} />
         <MoreInfoIcon onPress={this.props.onShowInfoPane} />
       </View>
     ) 

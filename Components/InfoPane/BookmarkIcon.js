@@ -17,8 +17,6 @@ class BookmarkIcon extends InfoPaneIcon{
         backgroundColor: '#FBE9E8'
       }
     }])
-    console.log('this.styles', this.styles);
-
   }
 
   getImage(){

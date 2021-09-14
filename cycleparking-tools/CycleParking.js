@@ -1,5 +1,7 @@
 import { geohashQueryBounds } from 'geofire-common'
 
+import staticEnums from './cycleparking_enums.json'
+
 class CyclePark{
   constructor( formatted_object ){
     this.data = formatted_object
@@ -24,19 +26,21 @@ class CyclePark{
     return this.data['lon'] ?? null;
   }
   getName = () => {
-    return this.data['name'] ?? null;
+    return CycleParking.getEnum('names', this.data['name'].toString() ); 
   }
   getSpaces = () => {
     return this.data['spaces'] ?? null;
   }
   getType = () => {
-    return this.data['type'] ?? null;
+    return CycleParking.getEnum('types', this.data['type'].toString() ); 
   }
   getPicurl1 = () => {
-    return this.data['picurl1'] ?? null;
+    const formattedHost = this.replaceOrigin( this.data['picurl1'] )
+    return formattedHost;
   }
   getPicurl2 = () => {
-    return this.data['picurl2'] ?? null;
+    const formattedHost = this.replaceOrigin( this.data['picurl2'] )
+    return formattedHost;
   }
   isHanger = () => {
     return this.data['hanger'] ?? null;
@@ -53,10 +57,29 @@ class CyclePark{
   isCovered = () => {
     return this.data['covered'] ?? null;
   }
+
+  /**
+   * replace the origin part of the origin id with the full one
+   *
+   * @memberof CyclePark
+   */
+  replaceOrigin = ( url ) => {
+    let id = url.match(/#(\d+)/) // "pic1url": "#0/coolimg_123456.png"
+    let host
+    if(id && id[1]){
+      host = CycleParking.getEnum('imghosts', id[1].toString()) 
+    }else{
+      throw new Error(`could not get host id from ${str}`)
+    }
+    return url.replace(id[0], host)
+  }
+
 }
 
 
 class CycleParking{
+
+  static staticEnums = staticEnums
 
   constructor( debug = false ){
     this.debug = debug
@@ -65,6 +88,15 @@ class CycleParking{
      * the actual place data object
      */
     this.data = {}
+
+    /**
+     * ids go here
+     * 
+     * names
+     * types
+     * imghosts
+     */
+    this.enums = {}
 
   }
 
@@ -84,6 +116,30 @@ class CycleParking{
   setData = ( data ) => {
     this.data = data
     return this
+  }
+
+  /**
+   * 
+   */
+  setEnums = ( enumsData ) => {
+    this.enums = enumsData
+    return this
+  }
+
+  /**
+   *
+   *
+   * @memberof CycleParking
+   */
+  static getEnum = ( key, id ) => {
+    let value = null
+    if( 
+      this.staticEnums[ key.toString() ]
+      && this.staticEnums[ key.toString() ][ id.toString() ]
+    ){
+      value = this.staticEnums[ key.toString() ][ id.toString() ]
+    }
+    return value
   }
 
 

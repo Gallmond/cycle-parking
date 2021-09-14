@@ -21,8 +21,6 @@ class NiceInformativeIcon extends Component{
   constructor(props){
     super(props)
 
-    console.log('this.props.children', this.props.children);
-
     this.active = props.active === undefined ? true : props.active
     this.headingText = props.headingText ?? 'Header text'
     this.subHeadingText = props.subHeadingText ?? null
