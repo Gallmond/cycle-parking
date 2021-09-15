@@ -19,18 +19,6 @@ const win = {
   h: Dimensions.get('window').height,
 }
 
-const image_prohibited = require('./images/prohibited.png')
-const image_umbrella = require('./images/umbrella.png')
-const image_locked = require('./images/locked.png')
-const image_locker = require('./images/locker.png')
-const image_tiered = require('./images/tiered.png')
-const image_hanger = require('./images/hanger.png')
-const image_photo = require('./images/photo.png')
-
-const image_sheffield = require('./stands/sheffield.png')
-
-const image_info = require(`./images/bookmark.png`)
-
 class CycleParkingInformationPage extends Component{
  
   constructor(props){
@@ -98,8 +86,49 @@ class CycleParkingInformationPage extends Component{
 
   }
 
-  openImageSectionToImage( image_url ){
+  showImage( image_url ){
     this.setState({...this.state, showImageSection: true, imageUrl: image_url})
+  }
+
+  openImageSectionToImage( image_url ){
+
+    // check permissions
+    userSettings.get('alwaysShowImage').then( value => {
+      if(value){
+        this.setState({...this.state, showImageSection: true, imageUrl: image_url})
+        return
+      }
+
+      // Ask permission
+      //TODO refactor this
+      Alert.alert(
+        "Show Image?",
+        `${String.fromCodePoint(0x26a0)} images can use a lot of data (approx 1.4mb each).\r\n(this can be changed in the settings page)`,
+        [
+          {
+            text: "Show this time",
+            onPress: ()=>{ 
+              this.showImage( image_url )
+            }
+          },
+          {
+            text: "Always show",
+            onPress: ()=>{
+              userSettings.set('alwaysShowImage', true)
+              this.showImage( image_url )
+            }
+          },
+          {
+            text: "Cancel",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel"
+          },
+        ]
+      );
+
+    })
+
+    
   }
   closeImageSection(){
     this.setState({...this.state, showImageSection: false})
@@ -206,11 +235,21 @@ class CycleParkingInformationPage extends Component{
             onPress={()=>{this.openImageSectionToImage( cyclePark.getPicurl2() )}}
           />
 
-          <BookmarkInfo
-            key={this.state.cycleParkIsBookmarked ? 'Remove' : 'Add'} // component does not rerender without thi
-            subHeadingText={this.state.cycleParkIsBookmarked ? 'Remove' : 'Add'}
+          {
+            this.state.cycleParkIsBookmarked !== null
+            ? <BookmarkInfo
+            key={!this.state.cycleParkIsBookmarked ? 'Add' : 'Remove'} // component does not rerender without thi
+            subHeadingText={!this.state.cycleParkIsBookmarked ? 'Add' : 'Remove'}
             onPress={()=>{this.bookmarkButtonOnPress()}}
-          />
+            />
+            : <BookmarkInfo
+            key={!this.state.cycleParkIsBookmarked ? 'aAdd' : 'aRemove'} // component does not rerender without thi
+            subHeadingText={' '}
+            onPress={()=>{}}
+            />
+          }
+          
+          
 
         </View>
 

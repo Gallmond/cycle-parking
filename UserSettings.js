@@ -1,5 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * 'bookmarks' key contains an array of cyclepark ids
+ * 'alwaysShowImages' key contains true|false key
+ */
 class UserSettings{
 
   constructor(){

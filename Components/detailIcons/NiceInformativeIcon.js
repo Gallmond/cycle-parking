@@ -78,8 +78,8 @@ class NiceInformativeIcon extends Component{
   }
   getImageSection(){
     return(
-      <ImageBackground imageStyle={this.styles.image} style={this.styles.image} source={this.backgroundImage ? this.backgroundImage : null} >
-        <Image style={this.styles.image} source={this.foregroundImage ? this.foregroundImage : null} />
+      <ImageBackground fadeDuration={0} imageStyle={this.styles.image} style={this.styles.image} source={this.backgroundImage ? this.backgroundImage : null} >
+        <Image fadeDuration={0} style={this.styles.image} source={this.foregroundImage ? this.foregroundImage : null} />
       </ImageBackground>
     )
   }

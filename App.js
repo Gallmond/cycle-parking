@@ -41,6 +41,7 @@ import InstructionsPage from './InstructionsPage';
 import cycleparkingJson from './cycleparking-tools/cycleparking.json'
 import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json'
 import userSettings from './UserSettings';
+import SettingsPage from './SettingsPage';
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
 
@@ -138,8 +139,8 @@ const App = () => {
   // display the info pane
   const [displayInfo, setDisplayInfo] = useState(false)
 
-  // display the instructions page
-  const [instructionsPageVisible, setInstructionsPageVisible] = useState(false)
+  // display the settings page
+  const [settingsPageVisible, setSettingsPageVisible] = useState(false)
 
   // camera
   const [mapCamera, setMapCamera] = useState({
@@ -288,10 +289,14 @@ const App = () => {
     setSelectedMarker( e );
   }
 
+  const toggleSettingsPage = () => {
+    console.log('Toggle Settings Page!!!')
+    setSettingsPageVisible( !settingsPageVisible )
+  }
+
 
   return (
     <View style={styles.container}>
-
       <View style={styles.map_container}>
         <MapView
           ref={mapRef}
@@ -300,53 +305,54 @@ const App = () => {
           camera={mapCamera}
           onPress={onPressHandler}
           onRegionChangeComplete={onRegionChangeCompleteHandler}
-
           showsPointsOfInterest={false}
           showsBuildings={false}
           showsIndoors={false}
-
           // cluster options
           clusterColor={'#B52929'}
           spiralEnabled={false}
           maxZoom={18}
           radius={WIN_WIDTH * 0.075} // pixels, default is 6% of window width
-
           // cluster fails without an initial region
           initialRegion={{
             latitude: 51.5079,
             longitude: -0.0877,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
-          }}
-        >
-
+          }}>
           {/* Draw the markers, or cluster marker */}
           {/* {getAllMarkers().map( marker => renderMarker( marker ) )} */}
-          {searchedMarkers.map( marker => renderMarker( marker ) )}
-          {bookmarkedMarkers.map( marker => renderMarker( marker, true ) )}
+          {searchedMarkers.map(marker => renderMarker(marker))}
+          {bookmarkedMarkers.map(marker => renderMarker(marker, true))}
 
           {/* Draw the circle if it's visible */}
-          {circleProps.visible && <Circle  {...circleProps} />}
-
+          {circleProps.visible && <Circle {...circleProps} />}
         </MapView>
 
-        {
-          displayInfo
-          && selectedMarker
-          && <CycleParkingInformationPage 
-            style={{...StyleSheet.absoluteFillObject}} 
+        {displayInfo && selectedMarker && (
+          <CycleParkingInformationPage
+            style={{...StyleSheet.absoluteFillObject}}
             cyclePark={selectedMarker.cyclepark}
-            onBookmarksChanged={updateDrawableBookmarks} 
+            onBookmarksChanged={updateDrawableBookmarks}
           />
-        }
-
+        )}
       </View>
 
       {/* draw an info pane if there is a marker selected */}
-      {selectedMarker && <InfoPane
-        marker={selectedMarker}
-        onShowInfoPane={toggleInfoPane}
-      />}
+      {selectedMarker && (
+        <InfoPane marker={selectedMarker} onShowInfoPane={toggleInfoPane} />
+      )}
+
+      {settingsPageVisible && <SettingsPage />}
+
+      {/* temp button */}
+      <TouchableOpacity
+        style={{width: 100, height: 100, position: 'absolute', left: 0}}
+        onPress={toggleSettingsPage}>
+        <View style={{backgroundColor: 'red'}}>
+          <Text>TEMP</Text>
+        </View>
+      </TouchableOpacity>
 
     </View>
   );
