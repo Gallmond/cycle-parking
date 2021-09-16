@@ -1,15 +1,16 @@
 import React, { Component } from "react"
-import { View, StyleSheet, Text, Switch, Button } from "react-native"
+import { View, StyleSheet, Text, Switch, Button, Alert, TouchableOpacity } from "react-native"
 import Card from "./Components/Card"
 import themes from "./Theme"
+import userSettings from "./UserSettings"
 
 class SettingsPage extends Component{
   constructor(props){
     super(props)
 
     this.state = {
-      switchValue: false,
-      switchEnabled: true,
+      alwaysShowImagesSwitchState: false,
+      alwaysShowImagesSwitchEnabled: false,
     }
 
     this.styles = StyleSheet.create({
@@ -21,7 +22,7 @@ class SettingsPage extends Component{
         paddingRight:10,
       },
       settingRow:{
-        height: '10%',
+        // height: '10%',
         marginTop: '5%',
 
         flexDirection: 'row',
@@ -40,13 +41,66 @@ class SettingsPage extends Component{
         justifyContent: 'center',
         flex:3,
       },
-
-
     })
+
+    // get current settings
+    userSettings.get('alwaysShowImages').then( alwaysShowImages => {
+      this.setState({
+        ...this.state,
+        alwaysShowImagesSwitchEnabled: true,
+        alwaysShowImagesSwitchState: alwaysShowImages
+      });
+    })
+
   }
 
-  clearBookmarksButtonPressed(){
+  alwaysShowImagesChanged(){
+    const newState = !this.state.alwaysShowImagesSwitchState
+    // change the state of the on-page button
+    this.setState({alwaysShowImagesSwitchState: newState});
+    // save the user setting
+    userSettings.set('alwaysShowImages', newState)
+  }
+
+  async clearBookmarksButtonPressed(){
     console.log('//TODO clearBookmarksButtonPressed')
+
+    const bookMarksArray = await userSettings.get('bookmarks')
+
+    if(bookMarksArray.length < 1){
+      Alert.alert('You have no bookmarks');
+      return;
+    }
+
+    //TODO warn user
+    Alert.alert(
+      "Clear Bookmarks?",
+      `Really delete ${bookMarksArray.length} bookmarks? This can't be undone.`,
+      [
+        {
+          text: "Clear",
+          onPress: ()=>{ 
+            // cam't use this.methodName here???
+            userSettings.set('bookmarks', [])
+            //TODO alert user
+            Alert.alert('Bookmarks Cleared');
+          }
+        },
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+      ]
+    );
+
+  }
+
+  clearBookmarks(){
+    // just set it empty!
+    userSettings.set('bookmarks', [])
+    //TODO alert user
+    Alert.alert('Bookmarks Cleared');
   }
 
   render(){
@@ -65,25 +119,46 @@ class SettingsPage extends Component{
               color={themes.main.secondary}
               accessibilityLabel="Clear bookmarks"
              />
-
-            {/* <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={this.state.switchEnabled ? themes.main.secondary : 'gray'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={() => {
-                this.setState({switchValue: !this.state.switchValue});
-              }}
-              value={this.state.switchValue}
-            /> */}
           </View>
         </Card>
 
         <Card style={this.styles.settingRow}>
-          <Text style={{color:'black'}}>111</Text>
+          <View style={this.styles.settingTextContainer}>
+            <Text style={this.styles.settingText}>Always show images</Text>
+          </View>
+          <View style={this.styles.settingControlContainer}>
+
+            {
+              // Don't show switch until it's enabled anyway
+              this.state.alwaysShowImagesSwitchEnabled
+              && <Switch
+                disabled={!this.state.alwaysShowImagesSwitchEnabled}
+                trackColor={{false: '#767577', true: '#81b0ff'}}
+                thumbColor={themes.main.secondary}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={() => {
+                  this.alwaysShowImagesChanged()
+                  this.setState({alwaysShowImagesSwitchState: !this.state.alwaysShowImagesSwitchState});
+                }}
+                value={this.state.alwaysShowImagesSwitchState}
+              />
+            }
+            
+            </View>
         </Card>
 
         <Card style={this.styles.settingRow}>
-          <Text style={{color:'black'}}>222</Text>
+          <TouchableOpacity onPress={()=>{
+            userSettings.get('alwaysShowImages').then( val => {
+              console.log('alwaysShowImages', val);
+            })
+            userSettings.get('bookmarks').then( val => {
+              console.log('bookmarks', val);
+            })
+          }}>
+            <Text style={{color:'black'}}>Tap to log settings</Text>
+
+          </TouchableOpacity>
         </Card>
 
       </View>
