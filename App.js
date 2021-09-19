@@ -42,11 +42,13 @@ import cycleparkingJson from './cycleparking-tools/cycleparking.json'
 import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json'
 import userSettings from './UserSettings';
 import SettingsPage from './SettingsPage';
+import ListViewPage from './ListViewPage';
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
 
 // image sources
 const image_info = require(`./images/info.png`)
+const image_cog = require(`./images/cog.png`)
 
 // unchanging settings
 const WIN_WIDTH = Dimensions.get('window').width
@@ -141,6 +143,10 @@ const App = () => {
 
   // display the settings page
   const [settingsPageVisible, setSettingsPageVisible] = useState(false)
+  
+  // display the list view
+  const [listViewVisible, setListViewVisible] = useState(false)
+
 
   // camera
   const [mapCamera, setMapCamera] = useState({
@@ -178,13 +184,21 @@ const App = () => {
   }
 
   // pan the camera to a given lat lon over a given time
-  const setCameraOver = (lat, lon, duration_ms = 500) => {
-    mapRef.current.animateCamera({
+  const setCameraOver = (lat, lon, duration_ms = 500, new_zoom = null) => {
+    
+    const newCameraConfig = {
       center:{
         latitude: lat,
         longitude: lon
       }
-    },{duration:duration_ms})
+    }
+
+    if(new_zoom){
+      newCameraConfig['zoom'] = new_zoom
+    }
+
+    mapRef.current.animateCamera(newCameraConfig,{duration:duration_ms})
+    
   }
 
   // when the map itself is pressed
@@ -294,6 +308,11 @@ const App = () => {
     setSettingsPageVisible( !settingsPageVisible )
   }
 
+  const toggleListView = () => {
+    console.log('Toggle List View!!!')
+    setListViewVisible( !listViewVisible )
+  }
+
 
   return (
     <View style={styles.container}>
@@ -345,14 +364,32 @@ const App = () => {
 
       {settingsPageVisible && <SettingsPage />}
 
-      {/* temp button */}
+      {/* settings button //TODO move this */}
       <TouchableOpacity
-        style={{width: 100, height: 100, position: 'absolute', left: 0}}
+        style={{width: 50, height: 50, position: 'absolute', left: 0, top:0}}
         onPress={toggleSettingsPage}>
-        <View style={{backgroundColor: 'red'}}>
-          <Text>TEMP</Text>
-        </View>
+        <Image style={{flex:1, height:undefined, width:undefined}} source={image_cog} />
       </TouchableOpacity>
+
+      {listViewVisible && <ListViewPage
+        searchedMarkers={searchedMarkers}
+        bookmarkedMarkers={bookmarkedMarkers}
+        optionSelected={( markerObject )=>{
+          // move camera here
+          const lat = markerObject.coordinate.latitude;
+          const lon = markerObject.coordinate.longitude;
+          setCameraOver( lat, lon, 500, 19 )  
+          setSelectedMarker( markerObject )
+          setListViewVisible( false )
+        }}
+       />}
+      
+      {/* list view button //TODO move this */}
+      <TouchableOpacity
+        style={{position:'absolute', top:'50%', left:0, backgroundColor: 'red'}}
+        onPress={toggleListView}>
+        <Text>SHOW LIST VIEW</Text>
+      </TouchableOpacity> 
 
     </View>
   );
