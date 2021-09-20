@@ -103,6 +103,7 @@ const App = () => {
 
   // reference to the map, use this to call map methods
   const mapRef = useRef(null);
+  const tappedMarkerRef = useRef(null);
 
   // all markers
   const [searchedMarkers, setSearchedMarkers] = useState([])
@@ -172,7 +173,7 @@ const App = () => {
   const renderMarker = ( marker, highlight_pin = false ) => {
     const markerprops = {...marker, pinColor: highlight_pin ? 'blue' : 'red'}
     return ( 
-      <Marker onPress={()=>{onMarkerPress( marker )}} {...markerprops} >
+      <Marker onPress={(comp, e)=>{onMarkerPress(comp, marker )}} {...markerprops} >
         <Callout title={marker.title} description={marker.description} />
       </Marker> 
     )
@@ -236,8 +237,9 @@ const App = () => {
         longitude: cyclepark_object.getLon()
       },
       cyclepark: cyclepark_object,
-      title: cyclepark_object.getName(),
-      description: `${cyclepark_object.getType()} (${cyclepark_object.getSpaces()} spaces) (${!cyclepark_object.isSecure() ? 'not ' : ''}secure)`
+      // callout options, remove to disable
+      // title: cyclepark_object.getName(),
+      // description: `${cyclepark_object.getType()} (${cyclepark_object.getSpaces()} spaces) (${!cyclepark_object.isSecure() ? 'not ' : ''}secure)`
     }
   }
 
@@ -299,7 +301,10 @@ const App = () => {
   }
 
 
-  const onMarkerPress = (e) => {
+  const onMarkerPress = (comp, e) => {
+    console.log('comp', comp);
+    console.log('Object.keys(comp)', Object.keys(comp));
+
     setSelectedMarker( e );
   }
 
