@@ -53,7 +53,7 @@ class ListViewPage extends Component{
 
     return(
       <TouchableOpacity key={cyclePark.getId()} onPress={()=>{this.optionElementPressed( markerObject )}}>
-        <Card>
+        <Card style={{height:60}}>
           <Text>{str}</Text>
         </Card>
       </TouchableOpacity>
