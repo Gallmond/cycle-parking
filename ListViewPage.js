@@ -54,7 +54,7 @@ class ListViewPage extends Component {
         onPress={() => {
           this.optionElementPressed(markerObject);
         }}>
-        <Card>
+        <Card style={{height:'150px'}}>
           <Text>{str}</Text>
         </Card>
       </TouchableOpacity>
