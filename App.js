@@ -119,7 +119,6 @@ const App = () => {
     userSettings.get('bookmarks').then( cycleParkIds => {
       setBookmarkedCycleParkIds(cycleParkIds)
 
-      // check if any of these exist in the already drawn searchedMarkers
       const temp_searchedMarkers = [...searchedMarkers]
       for (let i = temp_searchedMarkers.length - 1; i >= 0; i--) {
         if( cycleParkIds.indexOf(temp_searchedMarkers[i].cyclepark.getId()) !== -1 ){
@@ -302,9 +301,6 @@ const App = () => {
 
 
   const onMarkerPress = (comp, e) => {
-    console.log('comp', comp);
-    console.log('Object.keys(comp)', Object.keys(comp));
-
     setSelectedMarker( e );
   }
 
@@ -324,7 +320,11 @@ const App = () => {
 
       {/* draw an info pane if there is a marker selected */}
       {selectedMarker && (
-        <InfoPane marker={selectedMarker} onShowInfoPane={toggleInfoPane} />
+        <InfoPane
+          marker={selectedMarker}
+          onShowInfoPane={toggleInfoPane}
+          onBookmarksChanged={updateDrawableBookmarks}
+          />
       )}
 
       <View style={styles.map_container}>

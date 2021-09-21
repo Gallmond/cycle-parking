@@ -8,6 +8,7 @@ import RoutingIcon from './RoutingIcon'
 import MoreInfoIcon from './MoreInfoIcon'
 import Card from '../Card'
 import themes from '../../Theme'
+import userSettings from '../../UserSettings'
 
 const image_other = require(`./../../stands/other.png`);
 const image_sheffield = require(`./../../stands/sheffield.png`);
@@ -35,6 +36,7 @@ class InfoPane extends Component{
 
     this.state = {
       is_hidden: true,
+      isBookmarked: null
     }
 
     this.style = StyleSheet.create({
@@ -61,6 +63,21 @@ class InfoPane extends Component{
         color: 'white',
         fontSize: 20
       }
+    })
+
+    // get bookmarks status
+    userSettings.get('bookmarks').then(bookmarks => {
+
+      const cycleParkId = this.props.marker.cyclepark.getId()
+      const isBookmarked = bookmarks.includes(cycleParkId)
+
+      console.log(`id[${cycleParkId}] is found in bookmarks[${isBookmarked}]`)
+
+      this.setState({
+        ...this.state,
+        isBookmarked: isBookmarked,
+      });
+      console.log('Got bookmarks in infoPane', bookmarks);
     })
 
   }
@@ -129,6 +146,51 @@ class InfoPane extends Component{
     Linking.openURL(gmap_url)
   }
 
+  /**
+   * toggle the bookmark for the current cyclepark
+   * call onBookmarksChanged prop callback if it is set
+   */
+  toggleBookmarkForCurrentCyclePark(){
+
+    const cyclePark = this.props.marker.cyclepark
+    const cyclepark_id = cyclePark.getId()
+
+    userSettings.get('bookmarks').then( bookmarks =>{
+
+      bookmarks = new Set( Array.isArray(bookmarks) ? bookmarks : [] )
+
+      // if this is already bookmarked, set it. If not, remove it
+      bookmarks.has( cyclepark_id )
+        ? bookmarks.delete( cyclepark_id )
+        : bookmarks.add( cyclepark_id )
+
+      userSettings.set( 'bookmarks', Array.from( bookmarks ) ).then( success => {
+        
+        if(typeof this.props.onBookmarksChanged === 'function'){
+          this.props.onBookmarksChanged( Array.from( bookmarks ) )
+        }
+
+        this.setState({
+          ...this.state,
+          isBookmarked: bookmarks.has( cyclepark_id )
+        })
+
+      });
+    })
+  }
+
+  getBookmarkOpacity(){
+    let bookmarkOpacity = 0
+    console.log('this.state.isBookmarked', this.state.isBookmarked);
+    if(this.state.isBookmarked === true){
+      bookmarkOpacity = 1
+    }
+    if(this.state.isBookmarked === false){
+      bookmarkOpacity = 0.3
+    }
+    return bookmarkOpacity;
+  }
+
   render(){
 
     const cyclePark = this.props.marker.cyclepark
@@ -141,6 +203,8 @@ class InfoPane extends Component{
     const isTiered = cyclePark.isTiered()
     const isHanger = cyclePark.isHanger()
 
+    const bookmarkOpacity = this.getBookmarkOpacity()
+    console.log('bookmarkOpacity', bookmarkOpacity);
 
     return (
       <View style={this.style.outer}>
@@ -185,12 +249,17 @@ class InfoPane extends Component{
         </Card>
 
         {/* //TODO add bookmark button functionality */}
-        <Card style={this.style.item}>
-          <Image style={{height: undefined, width: undefined, flex: 1}} source={image_bookmark} />
+        <TouchableOpacity style={this.style.item} onPress={()=>{
+          this.toggleBookmarkForCurrentCyclePark()
+        }}>
+        <Card style={{margin:0, height:'100%'}}>
+          <Image opacity={this.getBookmarkOpacity()}  style={{height: undefined, width: undefined, flex: 1}} source={image_bookmark} />
         </Card>
+        </TouchableOpacity>
+        
 
         <TouchableOpacity style={this.style.item} onPress={()=>{
-            this.openGoogleMapsWithDirections();
+            this.openGoogleMapsWithDirections()
           }}>
           <Card style={{margin:0, height:'100%'}}>
             <Image style={{height: undefined, width: undefined, flex: 1}} source={image_arrow} />
