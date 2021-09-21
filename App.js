@@ -321,6 +321,12 @@ const App = () => {
 
   return (
     <View style={styles.container}>
+
+      {/* draw an info pane if there is a marker selected */}
+      {selectedMarker && (
+        <InfoPane marker={selectedMarker} onShowInfoPane={toggleInfoPane} />
+      )}
+
       <View style={styles.map_container}>
         <MapView
           ref={mapRef}
@@ -361,11 +367,7 @@ const App = () => {
           />
         )}
       </View>
-
-      {/* draw an info pane if there is a marker selected */}
-      {selectedMarker && (
-        <InfoPane marker={selectedMarker} onShowInfoPane={toggleInfoPane} />
-      )}
+    
 
       {settingsPageVisible && <SettingsPage />}
 

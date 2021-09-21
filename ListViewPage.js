@@ -212,25 +212,16 @@ class ListViewPage extends Component {
   render() {
     const allMarkers = this.getOrderedMarkers();
 
-    const data = allMarkers
-
     return (
       <SafeAreaView style={this.style.outer}>
         <FlatList
-          data={data}
+          data={allMarkers}
           renderItem={( markerObject )=>{
             return this.flatListRenderItem( markerObject )
           }}
           keyExtractor={item => item.id}
         />
       </SafeAreaView>
-
-
-      // <View style={this.style.outer}>
-      //   {/* Note that 'fat' arrow functions like this are needed for 'this' scoping issues */}
-      //   {/* {allMarkers.map(this.optionElement)} // no good */}
-      //   {allMarkers.map(markerObject => this.optionElement(markerObject))}
-      // </View>
     );
   }
 }
