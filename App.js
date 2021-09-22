@@ -115,6 +115,16 @@ const App = () => {
     updateDrawableBookmarks();
   }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
   
+
+  const bookmarksChanged = ( new_bookmarked_cycleparkids ) => {
+
+    // compare this list to current
+    
+    //
+
+  }
+
+
   const updateDrawableBookmarks = () => {
     userSettings.get('bookmarks').then( cycleParkIds => {
       setBookmarkedCycleParkIds(cycleParkIds)
@@ -369,7 +379,11 @@ const App = () => {
       </View>
     
 
-      {settingsPageVisible && <SettingsPage />}
+      {settingsPageVisible && 
+        <SettingsPage
+          onBookmarksChanged={updateDrawableBookmarks}
+        />
+      }
 
       {/* settings button //TODO move this */}
       <TouchableOpacity

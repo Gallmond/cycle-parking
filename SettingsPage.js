@@ -52,6 +52,8 @@ class SettingsPage extends Component{
       });
     })
 
+    this.onAlertConfirm.bind(this)
+
   }
 
   alwaysShowImagesChanged(){
@@ -62,8 +64,19 @@ class SettingsPage extends Component{
     userSettings.set('alwaysShowImages', newState)
   }
 
+  onAlertConfirm(){
+    // cam't use this.methodName here???
+    userSettings.set('bookmarks', [])
+    //TODO alert user
+    Alert.alert('Bookmarks Cleared');
+    console.log('typeof this', typeof this);
+
+    if(typeof this.props.onBookmarksChanged === 'function'){
+      this.props.onBookmarksChanged()
+    }
+  }
+
   async clearBookmarksButtonPressed(){
-    console.log('//TODO clearBookmarksButtonPressed')
 
     const bookMarksArray = await userSettings.get('bookmarks')
 
@@ -72,19 +85,13 @@ class SettingsPage extends Component{
       return;
     }
 
-    //TODO warn user
     Alert.alert(
       "Clear Bookmarks?",
       `Really delete ${bookMarksArray.length} bookmarks? This can't be undone.`,
       [
         {
           text: "Clear",
-          onPress: ()=>{ 
-            // cam't use this.methodName here???
-            userSettings.set('bookmarks', [])
-            //TODO alert user
-            Alert.alert('Bookmarks Cleared');
-          }
+          onPress: this.onAlertConfirm.bind(this)
         },
         {
           text: "Cancel",
@@ -114,7 +121,7 @@ class SettingsPage extends Component{
           <View style={this.styles.settingControlContainer}>
             <Button
               style={{alignSelf:'stretch'}}
-              onPress={this.clearBookmarksButtonPressed}
+              onPress={()=>{this.clearBookmarksButtonPressed()}}
               title={"Clear"}
               color={themes.main.secondary}
               accessibilityLabel="Clear bookmarks"
