@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, useEffect } from 'react'
 import { View, StyleSheet, Text, Image, TouchableOpacity } from "react-native"
 import SecureIcon from './SecureIcon'
 import SpacesIcon from './SpacesIcon'
@@ -53,12 +53,7 @@ class InfoPane extends Component{
         aspectRatio: 1,
 
         margin: 0,
-
-
-
       },
-
-
       text: {
         color: 'white',
         fontSize: 20
@@ -66,21 +61,30 @@ class InfoPane extends Component{
     })
 
     // get bookmarks status
-    userSettings.get('bookmarks').then(bookmarks => {
-
-      const cycleParkId = this.props.marker.cyclepark.getId()
-      const isBookmarked = bookmarks.includes(cycleParkId)
-
-      console.log(`id[${cycleParkId}] is found in bookmarks[${isBookmarked}]`)
-
-      this.setState({
-        ...this.state,
-        isBookmarked: isBookmarked,
-      });
-      console.log('Got bookmarks in infoPane', bookmarks);
-    })
+    this.getBookmarkStatus();
 
   }
+
+  getBookmarkStatus(){
+    return new Promise((resolve,reject)=>{
+      userSettings.get('bookmarks').then(bookmarks => {
+
+        const cycleParkId = this.props.marker.cyclepark.getId()
+        const isBookmarked = bookmarks.includes(cycleParkId)
+
+        this.setState({
+          ...this.state,
+          isBookmarked: isBookmarked,
+        });
+        
+        console.log(`Got bookmarks in infopane this bookmark ${isBookmarked ? 'is bookmarked':'is not bookmarked'}`)
+
+        resolve( isBookmarked )
+      })
+    });
+    
+  }
+ 
 
   toggle(){
     const is_hidden = !this.state.is_hidden
@@ -144,6 +148,15 @@ class InfoPane extends Component{
     ]
     const gmap_url = 'https://www.google.com/maps/dir/' + '?' + query.join('&')
     Linking.openURL(gmap_url)
+  }
+
+  showImagesForCurrentCyclePark(){
+    if(typeof this.props.onShowImageOverlay === 'function'){
+      this.props.onShowImageOverlay([
+        this.props.marker.cyclepark.getPicurl1(),
+        this.props.marker.cyclepark.getPicurl2(),
+      ])
+    }
   }
 
   /**
@@ -244,16 +257,20 @@ class InfoPane extends Component{
         </Card>
 
         {/* //TODO add photo button functionality */}
-        <Card style={this.style.item}>
+        <TouchableOpacity style={this.style.item} onPress={()=>{
+          this.showImagesForCurrentCyclePark()
+        }}>
+        <Card style={{margin:0, height:'100%'}}>
           <Image style={{height: undefined, width: undefined, flex: 1}} source={image_photo} />
         </Card>
+        </TouchableOpacity>
+        
 
-        {/* //TODO add bookmark button functionality */}
         <TouchableOpacity style={this.style.item} onPress={()=>{
           this.toggleBookmarkForCurrentCyclePark()
         }}>
         <Card style={{margin:0, height:'100%'}}>
-          <Image opacity={this.getBookmarkOpacity()}  style={{height: undefined, width: undefined, flex: 1}} source={image_bookmark} />
+          <Image opacity={this.getBookmarkOpacity()} cycleparkid={cyclePark.getId()} style={{height: undefined, width: undefined, flex: 1}} source={image_bookmark} />
         </Card>
         </TouchableOpacity>
         

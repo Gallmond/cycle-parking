@@ -43,6 +43,7 @@ import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json'
 import userSettings from './UserSettings';
 import SettingsPage from './SettingsPage';
 import ListViewPage from './ListViewPage';
+import themes from './Theme';
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
 
@@ -110,20 +111,16 @@ const App = () => {
   const [bookmarkedMarkers, setBookmarkedMarkers] = useState([])
   const [bookmarkedCycleParkIds, setBookmarkedCycleParkIds] = useState([])
 
+  const [imageOverlay, setImageOverlay] = useState({
+    visible: false,
+    sources: [],
+  })
+
   // load bookmarks only once
   useEffect(() => {
     updateDrawableBookmarks();
   }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
   
-
-  const bookmarksChanged = ( new_bookmarked_cycleparkids ) => {
-
-    // compare this list to current
-    
-    //
-
-  }
-
 
   const updateDrawableBookmarks = () => {
     userSettings.get('bookmarks').then( cycleParkIds => {
@@ -327,14 +324,54 @@ const App = () => {
 
   return (
     <View style={styles.container}>
-
+      
       {/* draw an info pane if there is a marker selected */}
       {selectedMarker && (
         <InfoPane
           marker={selectedMarker}
           onShowInfoPane={toggleInfoPane}
           onBookmarksChanged={updateDrawableBookmarks}
-          />
+          onShowImageOverlay={imagesArray => {
+            // imagesArray is an array of urls to images
+            setImageOverlay({
+              visible: !imageOverlay.visible,
+              sources: imagesArray,
+            });
+          }}
+        />
+      )}
+
+      {/* draw the images overlay if it is visible */}
+      {imageOverlay.visible && (
+        <TouchableOpacity
+          onPress={() => {
+            setImageOverlay({...imageOverlay, visible: false});
+          }}
+          style={{
+            height: '100%',
+            width: '100%',
+            backgroundColor: themes.main.background,
+            flexDirection: 'column',
+          }}>
+
+          {imageOverlay.sources.map(src => {
+            return (
+              <Image
+                style={{width: undefined, height: undefined, flex: 1, resizeMode:'contain'}}
+                key={src}
+                source={{uri: src}}
+              />
+            );
+          })}
+
+          <Text style={{
+            textAlignVertical: 'center',
+            position: 'absolute',
+            color: themes.main.text.onPrimary,
+            fontSize: 35,
+          }}>Tap anywhere to close</Text>
+
+        </TouchableOpacity>
       )}
 
       <View style={styles.map_container}>
@@ -377,41 +414,47 @@ const App = () => {
           />
         )}
       </View>
-    
 
-      {settingsPageVisible && 
-        <SettingsPage
-          onBookmarksChanged={updateDrawableBookmarks}
-        />
-      }
+      {settingsPageVisible && (
+        <SettingsPage onBookmarksChanged={updateDrawableBookmarks} />
+      )}
 
       {/* settings button //TODO move this */}
       <TouchableOpacity
-        style={{width: 50, height: 50, position: 'absolute', left: 0, top:0}}
+        style={{width: 50, height: 50, position: 'absolute', left: 0, top: 0}}
         onPress={toggleSettingsPage}>
-        <Image style={{flex:1, height:undefined, width:undefined}} source={image_cog} />
+        <Image
+          style={{flex: 1, height: undefined, width: undefined}}
+          source={image_cog}
+        />
       </TouchableOpacity>
 
-      {listViewVisible && <ListViewPage
-        searchedMarkers={searchedMarkers}
-        bookmarkedMarkers={bookmarkedMarkers}
-        optionSelected={( markerObject )=>{
-          // move camera here
-          const lat = markerObject.coordinate.latitude;
-          const lon = markerObject.coordinate.longitude;
-          setCameraOver( lat, lon, 500, 19 )  
-          setSelectedMarker( markerObject )
-          setListViewVisible( false )
-        }}
-       />}
-      
+      {listViewVisible && (
+        <ListViewPage
+          searchedMarkers={searchedMarkers}
+          bookmarkedMarkers={bookmarkedMarkers}
+          optionSelected={markerObject => {
+            // move camera here
+            const lat = markerObject.coordinate.latitude;
+            const lon = markerObject.coordinate.longitude;
+            setCameraOver(lat, lon, 500, 19);
+            setSelectedMarker(markerObject);
+            setListViewVisible(false);
+          }}
+        />
+      )}
+
       {/* list view button //TODO move this */}
       <TouchableOpacity
-        style={{position:'absolute', top:'50%', left:0, backgroundColor: 'red'}}
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: 0,
+          backgroundColor: 'red',
+        }}
         onPress={toggleListView}>
         <Text>SHOW LIST VIEW</Text>
-      </TouchableOpacity> 
-
+      </TouchableOpacity>
     </View>
   );
 };
