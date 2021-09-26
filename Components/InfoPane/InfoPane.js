@@ -1,5 +1,5 @@
 import React, { Component, useEffect } from 'react'
-import { View, StyleSheet, Text, Image, TouchableOpacity } from "react-native"
+import { View, StyleSheet, Text, Image, TouchableOpacity, Alert } from "react-native"
 import SecureIcon from './SecureIcon'
 import SpacesIcon from './SpacesIcon'
 import StandTypeIcon from './StandTypeIcon'
@@ -9,6 +9,7 @@ import MoreInfoIcon from './MoreInfoIcon'
 import Card from '../Card'
 import themes from '../../Theme'
 import userSettings from '../../UserSettings'
+
 
 const image_other = require(`./../../stands/other.png`);
 const image_sheffield = require(`./../../stands/sheffield.png`);
@@ -150,7 +151,51 @@ class InfoPane extends Component{
     Linking.openURL(gmap_url)
   }
 
+
+
   showImagesForCurrentCyclePark(){
+
+    // get user settings
+    userSettings.get( 'alwaysShowImages' ).then( alwaysShowImages =>{
+
+      console.log(' userSettings alwaysShowImages', alwaysShowImages);
+
+      if(!alwaysShowImages){
+        Alert.alert(
+          'Show Image?',
+          `Images are download over the internet (~1.4mb each).\r\nThis can be changed in the settings page.`,
+          [
+            {
+              text: 'Show this time',
+              onPress: () => {
+                this.showImages();
+              },
+            },
+            {
+              text: 'Always show',
+              onPress: () => {
+                userSettings.set('alwaysShowImages', true).then(()=>{
+                  this.showImages();
+                });
+              },
+            },
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Pressed'),
+              style: 'cancel',
+            },
+          ],
+        );
+      }else{
+        this.showImages();
+      }
+
+    });
+
+
+    
+  }
+  showImages(){
     if(typeof this.props.onShowImageOverlay === 'function'){
       this.props.onShowImageOverlay([
         this.props.marker.cyclepark.getPicurl1(),
