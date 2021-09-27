@@ -27,7 +27,7 @@ class ListViewPage extends Component {
     this.style = StyleSheet.create({
       outer: {
         ...StyleSheet.absoluteFillObject,
-        width: '80%',
+        width: '65%',
         backgroundColor: themes.main.background,
 
         flexDirection: 'column',

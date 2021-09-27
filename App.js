@@ -44,12 +44,15 @@ import userSettings from './UserSettings';
 import SettingsPage from './SettingsPage';
 import ListViewPage from './ListViewPage';
 import themes from './Theme';
+import Card from './Components/Card'
+
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
 
 // image sources
 const image_info = require(`./images/info.png`)
 const image_cog = require(`./images/cog.png`)
+const image_list = require(`./images/list.png`)
 
 // unchanging settings
 const WIN_WIDTH = Dimensions.get('window').width
@@ -447,13 +450,18 @@ const App = () => {
       {/* list view button //TODO move this */}
       <TouchableOpacity
         style={{
+          width: 50,
+          height: 50,
           position: 'absolute',
-          top: '50%',
-          left: 0,
-          backgroundColor: 'red',
+          bottom: '10%',
+          right: 0,
+          backgroundColor: themes.main.background
         }}
         onPress={toggleListView}>
-        <Text>SHOW LIST VIEW</Text>
+        <Image
+          style={{flex: 1, height: '100%', width: '100%'}}
+          source={image_list}
+        />
       </TouchableOpacity>
     </View>
   );
