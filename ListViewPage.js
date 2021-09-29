@@ -64,48 +64,50 @@ class ListViewPage extends Component {
         aspectRatio: 1,
       },
     });
+
+    this.state = {
+      onlyShowBookmarks: false,
+    };
   }
 
-  getImage( type ){
-    let sd = type.toString().toLowerCase()
-    let image_file = image_other
-    if(sd === 'other') image_file = image_other
-    if(sd === 'sheffield') image_file = image_sheffield
-    if(sd === 'cyclehoop') image_file = image_cyclehoop
-    if(sd === 'm stand') image_file = image_mstand
-    if(sd === 'butterfly') image_file = image_butterfly
-    if(sd === 'wheel rack') image_file = image_wheelrack
-    if(sd === 'post') image_file = image_post
-    if(sd === 'p stand') image_file = image_pstand
-    return image_file
+  getImage(type) {
+    let sd = type.toString().toLowerCase();
+    let image_file = image_other;
+    if (sd === 'other') image_file = image_other;
+    if (sd === 'sheffield') image_file = image_sheffield;
+    if (sd === 'cyclehoop') image_file = image_cyclehoop;
+    if (sd === 'm stand') image_file = image_mstand;
+    if (sd === 'butterfly') image_file = image_butterfly;
+    if (sd === 'wheel rack') image_file = image_wheelrack;
+    if (sd === 'post') image_file = image_post;
+    if (sd === 'p stand') image_file = image_pstand;
+    return image_file;
   }
 
   optionElementPressed(markerObject) {
     if (this.props.optionSelected) {
-      this.props.optionSelected(markerObject)
+      this.props.optionSelected(markerObject);
     }
   }
 
-
-  flatListRenderItem( item ){
-    return this.optionElement( item.item )
+  flatListRenderItem(item) {
+    return this.optionElement(item.item);
   }
 
   optionElement(markerObject) {
+    const cyclePark = markerObject.cyclepark;
 
-    const cyclePark = markerObject.cyclepark
-
-    const typeName = cyclePark.getType()
-    const spaces = cyclePark.getSpaces()
-    const name = cyclePark.getName()
+    const typeName = cyclePark.getType();
+    const spaces = cyclePark.getSpaces();
+    const name = cyclePark.getName();
     const dist = cyclePark.getDistance(); // metre
-    const isBookmark = this.isBookmarked( cyclePark.getId() )
+    const isBookmark = this.isBookmarked(cyclePark.getId());
 
-    let distStr = ''
-    if(dist){
+    let distStr = '';
+    if (dist) {
       dist > 500
-        ? distStr = `${(dist / 1000).toFixed(1)}km` // 1.2km
-        : distStr = `${dist.toFixed(0)}m` // 125m
+        ? (distStr = `${(dist / 1000).toFixed(1)}km`) // 1.2km
+        : (distStr = `${dist.toFixed(0)}m`); // 125m
     }
 
     return (
@@ -117,15 +119,14 @@ class ListViewPage extends Component {
         <Card style={this.style.rowElement}>
           <View style={this.style.rowContainer}>
             <View style={this.style.rowLeft}>
-              
               <View style={this.style.rowPart}>
                 <Text>{distStr}</Text>
               </View>
-              
+
               <View style={this.style.rowPart}>
                 <Image
                   style={this.style.rowPartImage}
-                  source={this.getImage( cyclePark.getType() )}
+                  source={this.getImage(cyclePark.getType())}
                 />
               </View>
 
@@ -165,10 +166,10 @@ class ListViewPage extends Component {
   }
 
   // this is very smelly
-  isBookmarked( cyclepark_id ){
+  isBookmarked(cyclepark_id) {
     for (let i = this.props.bookmarkedMarkers.length - 1; i >= 0; i--) {
-      let marker = this.props.bookmarkedMarkers[i]
-      if( marker.cyclepark.getId() === cyclepark_id ){
+      let marker = this.props.bookmarkedMarkers[i];
+      if (marker.cyclepark.getId() === cyclepark_id) {
         return true;
       }
     }
@@ -176,11 +177,17 @@ class ListViewPage extends Component {
   }
 
   getOrderedMarkers() {
+    console.log('ListViewPage.getOrderedMarkers()');
+    console.log('this.state.onlyShowBookmarks', this.state.onlyShowBookmarks);
+
     const searchedMarkers =
+      this.state.onlyShowBookmarks ||
       !Array.isArray(this.props.searchedMarkers) ||
       this.props.searchedMarkers.length === 0
         ? []
         : this.props.searchedMarkers;
+
+    console.log('searchedMarkers.length', searchedMarkers.length);
 
     const bookmarkedMarkers =
       !Array.isArray(this.props.bookmarkedMarkers) ||
@@ -209,15 +216,44 @@ class ListViewPage extends Component {
     return allMarkers;
   }
 
+  bookmarksOnlyButtonOnPress() {
+    this.setState({
+      ...this.state,
+      onlyShowBookmarks: !this.state.onlyShowBookmarks,
+    });
+    console.log('this.state.onlyShowBookmarks', this.state.onlyShowBookmarks);
+  }
+
+  toggleBookmarksButton() {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          this.bookmarksOnlyButtonOnPress();
+        }}>
+        <Card style={this.style.rowElement}>
+          <Text
+            style={{
+              width: '100%',
+              textAlign: 'center',
+              textAlignVertical: 'center',
+            }}>
+            {this.state.onlyShowBookmarks ? 'All results' : 'Bookmarks only'}
+          </Text>
+        </Card>
+      </TouchableOpacity>
+    );
+  }
+
   render() {
     const allMarkers = this.getOrderedMarkers();
 
     return (
       <SafeAreaView style={this.style.outer}>
+        {this.toggleBookmarksButton()}
         <FlatList
           data={allMarkers}
-          renderItem={( markerObject )=>{
-            return this.flatListRenderItem( markerObject )
+          renderItem={markerObject => {
+            return this.flatListRenderItem(markerObject);
           }}
           keyExtractor={item => item.id}
         />
