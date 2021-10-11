@@ -45,6 +45,7 @@ import SettingsPage from './SettingsPage';
 import ListViewPage from './ListViewPage';
 import themes from './Theme';
 import Card from './Components/Card'
+import Geolocation from 'react-native-geolocation-service';
 
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
@@ -463,6 +464,33 @@ const App = () => {
           source={image_list}
         />
       </TouchableOpacity>
+
+      {/* Temp 'focus on me' button //TODO move this */}
+
+      {/* list view button //TODO move this */}
+      <TouchableOpacity
+        style={{
+          width: 50,
+          height: 50,
+          position: 'absolute',
+          bottom: '10%',
+          left: 0,
+          backgroundColor: themes.main.background
+        }}
+        onPress={()=>{
+          console.log('focus button pressed')
+          //TODO how to get permissions
+          Geolocation.getCurrentPosition((position)=>{
+            console.log('position', position);
+          },
+          (err)=>{
+            console.log('err', err);
+          },
+          { enableHighAccuracy: true, timeout: 5000, maximumAge: 2500 })
+        }}>
+        <Text>FOCUS</Text>
+      </TouchableOpacity>
+
     </View>
   );
 };
