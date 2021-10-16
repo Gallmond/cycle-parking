@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 const image_gear = require('./../../../images/icons/gear.png');
 
@@ -26,9 +26,9 @@ class SettingsButton extends Component {
 
   render() {
     return (
-      <View style={this.style.icon}>
+      <TouchableOpacity style={this.style.icon}>
         <Image style={this.style.iconImage} source={image_gear} />
-      </View>
+      </TouchableOpacity>
     );
   }
 }

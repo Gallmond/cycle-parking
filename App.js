@@ -48,6 +48,8 @@ import Card from './Components/Card'
 import Geolocation from 'react-native-geolocation-service';
 import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 
+import FAB from './Components/GavMaterial/BottomBar/FAB'
+
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
 
@@ -418,11 +420,28 @@ const App = () => {
             onBookmarksChanged={updateDrawableBookmarks}
           />
         )}
+        
       </View>
 
-      {/* TESTING */} 
-      {/* <BottomBar /> */}
-      {/* <Text>TEST</Text> */}
+      <View 
+        style={{
+          position: 'absolute',
+          right: 90,
+          bottom: '50%',
+        }}>
+        <FAB onPress={()=>{console.log('FAB IN VIEW')}} />
+      </View>
+
+      <FAB 
+        style={{
+          position: 'absolute',
+          right: 30,
+          bottom: '50%',
+        }}
+        onPress={()=>{console.log('JUST FAB')}} />
+      
+      {/* The bottom bar of the app.  */}
+      {/* Contains menu button, settings button, and FAB(s) */}
       <BottomBar />
 
       {settingsPageVisible && (
