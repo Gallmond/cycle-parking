@@ -46,6 +46,7 @@ import ListViewPage from './ListViewPage';
 import themes from './Theme';
 import Card from './Components/Card'
 import Geolocation from 'react-native-geolocation-service';
+import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
@@ -419,6 +420,11 @@ const App = () => {
         )}
       </View>
 
+      {/* TESTING */} 
+      {/* <BottomBar /> */}
+      {/* <Text>TEST</Text> */}
+      <BottomBar />
+
       {settingsPageVisible && (
         <SettingsPage onBookmarksChanged={updateDrawableBookmarks} />
       )}
@@ -454,7 +460,7 @@ const App = () => {
           width: 50,
           height: 50,
           position: 'absolute',
-          bottom: '10%',
+          bottom: '30%',
           right: 0,
           backgroundColor: themes.main.background
         }}
@@ -473,7 +479,7 @@ const App = () => {
           width: 50,
           height: 50,
           position: 'absolute',
-          bottom: '10%',
+          bottom: '30%',
           left: 0,
           backgroundColor: themes.main.background
         }}

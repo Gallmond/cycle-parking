@@ -17,6 +17,10 @@ const themes = {
       onSurface: '#000000',
       onError: '#FFFFFF',
     }
+  },
+  debugHighlight: {
+    borderWidth: 2,
+    borderColor: 'red'
   }
 }
 
