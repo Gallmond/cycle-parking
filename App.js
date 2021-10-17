@@ -479,26 +479,8 @@ const App = () => {
 
         {listViewVisible && (
           <ListView
-            markers={[
-              {id: 1, foo: 'bar'},
-              {id: 2, foo: 'bar'},
-              {id: 3, foo: 'bar'},
-              {id: 4, foo: 'bar'},
-              {id: 5, foo: 'bar'},
-              {id: 6, foo: 'bar'},
-              {id: 7, foo: 'bar'},
-              {id: 8, foo: 'bar'},
-              {id: 9, foo: 'bar'},
-              {id: 10, foo: 'bar'},
-              {id: 11, foo: 'bar'},
-              {id: 12, foo: 'bar'},
-              {id: 13, foo: 'bar'},
-              {id: 14, foo: 'bar'},
-              {id: 15, foo: 'bar'},
-              {id: 16, foo: 'bar'},
-              {id: 17, foo: 'bar'},
-              {id: 18, foo: 'bar'},
-            ]}
+            searchedMarkers={searchedMarkers}
+            bookmarkedMarkers={bookmarkedMarkers}
           />
         )}
 

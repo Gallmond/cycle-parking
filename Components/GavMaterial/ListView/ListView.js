@@ -12,7 +12,8 @@ class ListView extends Component{
   constructor(props){
     super(props)
 
-    this.markers = props.markers
+    this.searchedMarkers = props.searchedMarkers
+    this.bookmarkedMarkers = props.bookmarkedMarkers
 
     const defaultStyles = {
       outer: {
@@ -27,6 +28,36 @@ class ListView extends Component{
 
   }
 
+  /**
+   * combine bookmarked and search results markers
+   */
+  combineAndOrderMarkers(){
+    const allMarkers = [
+      ...this.searchedMarkers,
+      ...this.bookmarkedMarkers,
+    ];
+
+    allMarkers.sort((a, b) => {
+      let a_dist = a.cyclepark.getDistance()
+      let b_dist = b.cyclepark.getDistance()
+
+      // if distance is null it should go first (probably a bookmark)
+      if (a_dist === null) a_dist = -65000
+      if (b_dist === null) b_dist = -65000
+
+      // a is less
+      if (a_dist < b_dist) return -1
+
+      // b is less
+      if (a_dist > b_dist) return 1
+
+      // equal
+      return 0
+    })
+
+    return allMarkers
+  }
+
   render(){
     return(
       //TODO continue replacing the list view part
@@ -36,7 +67,7 @@ class ListView extends Component{
             backgroundColor: 'brown',
             flexDirection: 'column'
           }}
-          data={this.markers}
+          data={this.combineAndOrderMarkers()}
           renderItem={(item)=>{
            return <ListItem
             marker={item.item}/> 
