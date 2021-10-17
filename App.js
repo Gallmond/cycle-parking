@@ -123,6 +123,9 @@ const App = () => {
     sources: [],
   })
 
+  // the floating text on initial load
+  const [floatingTextVisible, setFloatingTextVisible] = useState(true)
+  
   // load bookmarks only once
   useEffect(() => {
     updateDrawableBookmarks();
@@ -215,29 +218,45 @@ const App = () => {
     
   }
 
+  const searchMap = async (lat, lon) => {
+    console.log('searchMap(lat, lon)',lat, lon);
+
+    setFloatingTextVisible(false)
+
+    const tapped_lat = lat
+    const tapped_lon = lon
+
+    // draw circle
+    const radius = drawCircleToFitWidth(tapped_lat, tapped_lon);
+
+    console.log(`map tapped ${tapped_lat}, ${tapped_lon} radius: ${radius}`);
+
+    // get cycle parking and add it to the map
+    cycleParking
+      .getCycleParksInRange(tapped_lat, tapped_lon, radius)
+      .then(putCycleParkMarkersOnMap)
+      .catch(console.log);
+
+    // put bookmarked markers on
+    cycleParking
+      .getCycleParksById(bookmarkedCycleParkIds)
+      .then(putBookmarkMarkersOnMap)
+      .catch(console.log);
+
+    // centre camera here
+    setCameraOver(tapped_lat, tapped_lon, 500);
+
+    // clear the selectedMarker if any is set
+    selectedMarker && setSelectedMarker(null);
+  };
+
+
   // when the map itself is pressed
   const onPressHandler = async (e) => {
-
     const tapped_lat = e.nativeEvent.coordinate.latitude
     const tapped_lon = e.nativeEvent.coordinate.longitude
 
-    // draw circle
-    const radius = drawCircleToFitWidth(tapped_lat, tapped_lon)
-
-    console.log(`map tapped ${tapped_lat}, ${tapped_lon} radius: ${radius}`)
-
-    // get cycle parking and add it to the map
-    cycleParking.getCycleParksInRange( tapped_lat, tapped_lon, radius ).then( putCycleParkMarkersOnMap ).catch( console.log ) 
-    
-    // put bookmarked markers on
-    cycleParking.getCycleParksById( bookmarkedCycleParkIds ).then( putBookmarkMarkersOnMap ).catch( console.log ) 
-
-    // centre camera here
-    setCameraOver(tapped_lat, tapped_lon, 500)
-
-    // clear the selectedMarker if any is set
-    selectedMarker && setSelectedMarker( null )
-
+    searchMap(tapped_lat, tapped_lon)
   }
 
 
@@ -315,23 +334,41 @@ const App = () => {
 
 
   const onMarkerPress = (comp, e) => {
-    setSelectedMarker( e );
+    setSelectedMarker( e )
+    setFloatingTextVisible( false )
   }
 
   const toggleSettingsPage = () => {
-    console.log('Toggle Settings Page!!!')
+    console.log('toggleSettingsPage()')
+    closeAllViews()
     setSettingsPageVisible( !settingsPageVisible )
   }
 
   const toggleListView = () => {
     console.log('Toggle List View!!!')
+    closeAllViews()
     setListViewVisible( !listViewVisible )
   }
 
+  const searchAtCurrentCameraPosition = async () => {
+    console.log('searchAtCurrentCameraPosition()')
+    const currentCamera = await mapRef.current.getCamera();
+    const lat = currentCamera.center.latitude
+    const lon = currentCamera.center.longitude
+    searchMap(lat, lon)
+  }
+
+  /**
+   * set all views not visible
+   */
+  const closeAllViews = () => {
+    console.log('closeAllViews()')
+    setSettingsPageVisible( false )
+    setListViewVisible( false )
+  };
 
   return (
     <View style={styles.container}>
-      
       {/* draw an info pane if there is a marker selected */}
       {selectedMarker && (
         <InfoPane
@@ -360,24 +397,30 @@ const App = () => {
             backgroundColor: themes.main.background,
             flexDirection: 'column',
           }}>
-
           {imageOverlay.sources.map(src => {
             return (
               <Image
-                style={{width: undefined, height: undefined, flex: 1, resizeMode:'contain'}}
+                style={{
+                  width: undefined,
+                  height: undefined,
+                  flex: 1,
+                  resizeMode: 'contain',
+                }}
                 key={src}
                 source={{uri: src}}
               />
             );
           })}
 
-          <Text style={{
-            textAlignVertical: 'center',
-            position: 'absolute',
-            color: themes.main.text.onPrimary,
-            fontSize: 35,
-          }}>Tap anywhere to close</Text>
-
+          <Text
+            style={{
+              textAlignVertical: 'center',
+              position: 'absolute',
+              color: themes.main.text.onPrimary,
+              fontSize: 35,
+            }}>
+            Tap anywhere to close
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -393,7 +436,7 @@ const App = () => {
           showsBuildings={false}
           showsIndoors={false}
           // cluster options
-          clusterColor={'#B52929'}
+          clusterColor={'#EA3535'}
           spiralEnabled={false}
           maxZoom={18}
           radius={WIN_WIDTH * 0.075} // pixels, default is 6% of window width
@@ -413,6 +456,18 @@ const App = () => {
           {circleProps.visible && <Circle {...circleProps} />}
         </MapView>
 
+        {floatingTextVisible && (
+          <Text
+            style={{
+              position: 'absolute',
+              top: '30%',
+              fontSize: 40,
+              textAlign: 'center',
+            }}>
+            Tap to search{'\n'}Pinch & drag to move
+          </Text>
+        )}
+
         {displayInfo && selectedMarker && (
           <CycleParkingInformationPage
             style={{...StyleSheet.absoluteFillObject}}
@@ -420,43 +475,11 @@ const App = () => {
             onBookmarksChanged={updateDrawableBookmarks}
           />
         )}
-        
       </View>
-
-      <View 
-        style={{
-          position: 'absolute',
-          right: 90,
-          bottom: '50%',
-        }}>
-        <FAB onPress={()=>{console.log('FAB IN VIEW')}} />
-      </View>
-
-      <FAB 
-        style={{
-          position: 'absolute',
-          right: 30,
-          bottom: '50%',
-        }}
-        onPress={()=>{console.log('JUST FAB')}} />
-      
-      {/* The bottom bar of the app.  */}
-      {/* Contains menu button, settings button, and FAB(s) */}
-      <BottomBar />
 
       {settingsPageVisible && (
         <SettingsPage onBookmarksChanged={updateDrawableBookmarks} />
       )}
-
-      {/* settings button //TODO move this */}
-      <TouchableOpacity
-        style={{width: 50, height: 50, position: 'absolute', left: 0, top: 0}}
-        onPress={toggleSettingsPage}>
-        <Image
-          style={{flex: 1, height: undefined, width: undefined}}
-          source={image_cog}
-        />
-      </TouchableOpacity>
 
       {listViewVisible && (
         <ListViewPage
@@ -468,53 +491,19 @@ const App = () => {
             const lon = markerObject.coordinate.longitude;
             setCameraOver(lat, lon, 500, 19);
             setSelectedMarker(markerObject);
+            setFloatingTextVisible(false);
             setListViewVisible(false);
           }}
         />
       )}
 
-      {/* list view button //TODO move this */}
-      <TouchableOpacity
-        style={{
-          width: 50,
-          height: 50,
-          position: 'absolute',
-          bottom: '30%',
-          right: 0,
-          backgroundColor: themes.main.background
-        }}
-        onPress={toggleListView}>
-        <Image
-          style={{flex: 1, height: '100%', width: '100%'}}
-          source={image_list}
-        />
-      </TouchableOpacity>
-
-      {/* Temp 'focus on me' button //TODO move this */}
-
-      {/* list view button //TODO move this */}
-      <TouchableOpacity
-        style={{
-          width: 50,
-          height: 50,
-          position: 'absolute',
-          bottom: '30%',
-          left: 0,
-          backgroundColor: themes.main.background
-        }}
-        onPress={()=>{
-          console.log('focus button pressed')
-          //TODO how to get permissions
-          Geolocation.getCurrentPosition((position)=>{
-            console.log('position', position);
-          },
-          (err)=>{
-            console.log('err', err);
-          },
-          { enableHighAccuracy: true, timeout: 5000, maximumAge: 2500 })
-        }}>
-        <Text>FOCUS</Text>
-      </TouchableOpacity>
+      {/* The bottom bar of the app.  */}
+      {/* Contains menu button, settings button, and FAB(s) */}
+      <BottomBar
+        onSettingsButtonPress={toggleSettingsPage}
+        onListViewButtonPress={toggleListView}
+        onSearchButtonPress={searchAtCurrentCameraPosition}
+      />
 
     </View>
   );

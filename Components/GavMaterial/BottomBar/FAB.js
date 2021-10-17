@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Image, TouchableOpacity, Pressable } from 'react-native';
 import themes from '../../../Theme';
 
 import image_search from './../../../images/icons/magnifying-glass.png'
@@ -42,11 +42,13 @@ class FAB extends Component{
 
   render(){
     return (
-      <TouchableOpacity style={this.style.outer} onPress={()=>{
-        this.props.onPress ? this.props.onPress() : null
+      <Pressable style={this.style.outer} onPress={()=>{
+        this.props.onPress 
+          ? this.props.onPress() 
+          : null
       }}>
         <Image style={this.style.iconImage} source={image_search} />
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 

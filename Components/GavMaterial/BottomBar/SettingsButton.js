@@ -26,7 +26,9 @@ class SettingsButton extends Component {
 
   render() {
     return (
-      <TouchableOpacity style={this.style.icon}>
+      <TouchableOpacity style={this.style.icon} onPress={()=>{
+        this.props.onPress ? this.props.onPress() : null
+      }}>
         <Image style={this.style.iconImage} source={image_gear} />
       </TouchableOpacity>
     );
