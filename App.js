@@ -49,6 +49,7 @@ import Geolocation from 'react-native-geolocation-service';
 import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 
 import FAB from './Components/GavMaterial/BottomBar/FAB'
+import ListView from './Components/GavMaterial/ListView/ListView';
 
 const cycleParking = new CycleParking( true );
 cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
@@ -475,13 +476,39 @@ const App = () => {
             onBookmarksChanged={updateDrawableBookmarks}
           />
         )}
+
+        {listViewVisible && (
+          <ListView
+            markers={[
+              {id: 1, foo: 'bar'},
+              {id: 2, foo: 'bar'},
+              {id: 3, foo: 'bar'},
+              {id: 4, foo: 'bar'},
+              {id: 5, foo: 'bar'},
+              {id: 6, foo: 'bar'},
+              {id: 7, foo: 'bar'},
+              {id: 8, foo: 'bar'},
+              {id: 9, foo: 'bar'},
+              {id: 10, foo: 'bar'},
+              {id: 11, foo: 'bar'},
+              {id: 12, foo: 'bar'},
+              {id: 13, foo: 'bar'},
+              {id: 14, foo: 'bar'},
+              {id: 15, foo: 'bar'},
+              {id: 16, foo: 'bar'},
+              {id: 17, foo: 'bar'},
+              {id: 18, foo: 'bar'},
+            ]}
+          />
+        )}
+
       </View>
 
       {settingsPageVisible && (
         <SettingsPage onBookmarksChanged={updateDrawableBookmarks} />
       )}
 
-      {listViewVisible && (
+      {/* {listViewVisible && (
         <ListViewPage
           searchedMarkers={searchedMarkers}
           bookmarkedMarkers={bookmarkedMarkers}
@@ -495,7 +522,7 @@ const App = () => {
             setListViewVisible(false);
           }}
         />
-      )}
+      )} */}
 
       {/* The bottom bar of the app.  */}
       {/* Contains menu button, settings button, and FAB(s) */}
@@ -504,7 +531,6 @@ const App = () => {
         onListViewButtonPress={toggleListView}
         onSearchButtonPress={searchAtCurrentCameraPosition}
       />
-
     </View>
   );
 };

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, View, Image, Text, TouchableOpacity, SafeAreaView, FlatList} from 'react-native';
+import { StyleSheet, View, Image, Text, TouchableOpacity, SafeAreaView, FlatList} from 'react-native';
 import Card from './Components/Card';
 import themes from './Theme';
 
