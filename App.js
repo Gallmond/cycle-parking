@@ -390,6 +390,7 @@ const App = () => {
         </TouchableOpacity>
       )}
 
+      {/* MAP CONTAINER START */}
       <View style={styles.map_container}>
         <MapView
           ref={mapRef}
@@ -474,7 +475,9 @@ const App = () => {
           />
         )}
       </View>
+      {/* MAP CONTAINER END  */}
 
+      {/* settings page (clear bookmarks, always show image) */}
       {settingsPageVisible && (
         <SettingsPage onBookmarksChanged={updateDrawableBookmarks} />
       )}
