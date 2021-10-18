@@ -1,11 +1,13 @@
 import React, { Component } from "react"
-import { Text, StyleSheet, SafeAreaView, FlatList, View, Button } from "react-native"
+import { Switch, Text, StyleSheet, SafeAreaView, FlatList, View, Button } from "react-native"
 import themes from "../../../Theme"
 import ListItem from "./ListItem"
 
 /**
  * props:
- *  markers
+ *  searchedMarkers
+ *  bookmarkedMarkers
+ *  optionSelected
  */
 class ListView extends Component{
 
@@ -14,6 +16,7 @@ class ListView extends Component{
 
     this.searchedMarkers = props.searchedMarkers
     this.bookmarkedMarkers = props.bookmarkedMarkers
+    this.optionSelected = props.optionSelected
 
     const defaultStyles = {
       outer: {
@@ -26,6 +29,10 @@ class ListView extends Component{
 
     this.style = StyleSheet.create(defaultStyles)
 
+    this.state = {
+      onlyBookmarks: false
+    }
+
   }
 
   /**
@@ -37,10 +44,9 @@ class ListView extends Component{
       marker.cyclepark.isBookmark = true
     })
 
-    const allMarkers = [
-      ...this.searchedMarkers,
-      ...this.bookmarkedMarkers,
-    ];
+    const allMarkers = this.state.onlyBookmarks
+      ? [...this.bookmarkedMarkers]
+      : [ ...this.searchedMarkers, ...this.bookmarkedMarkers, ]
 
     allMarkers.sort((a, b) => {
       let a_dist = a.cyclepark.getDistance()
@@ -73,15 +79,38 @@ class ListView extends Component{
           backgroundColor: themes.main.primary,
           height: '7%',
           flexDirection: 'row',
-          justifyContent: 'flex-end',
           alignItems: 'center',
+          justifyContent: 'space-between',
           paddingHorizontal: 10
         }}>
+
           <Text style={{
             color: themes.main.text.onPrimary,
             fontSize: 20,
             fontWeight: 'bold'
           }}>List view</Text>
+
+          {/* <Button title="Bookmarks" disabled={true} /> */}
+
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <Text style={{
+              color: themes.main.text.onPrimary,
+              fontSize: 15,
+            }}>Bookmarks</Text>
+            <Switch
+              trackColor={{ false: themes.main.secondaryVariant, true: themes.main.secondary }}
+              thumbColor={true ? "#f5dd4b" : "#f4f3f4"}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={()=>{
+                this.setState({onlyBookmarks: !this.state.onlyBookmarks})
+              }}
+              value={this.state.onlyBookmarks}
+            />
+          </View>
+
         </View>
 
         {/* scrollable list */}
@@ -92,6 +121,7 @@ class ListView extends Component{
           data={this.combineAndOrderMarkers()}
           renderItem={(item)=>{
            return <ListItem
+            onPress={this.optionSelected ? this.optionSelected : null}
             marker={item.item}/> 
           }}
           keyExtractor={item => item.id}

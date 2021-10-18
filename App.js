@@ -7,164 +7,143 @@
  */
 
 import React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {
   Image,
-  Button,
   Dimensions,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
 import MapView from 'react-native-map-clustering';
-import { Callout, Circle, Marker } from "react-native-maps";
+import {Callout, Circle, Marker} from 'react-native-maps';
 
-import { CycleParking } from "./cycleparking-tools/CycleParking";
+import {CycleParking} from './cycleparking-tools/CycleParking';
 import InfoPane from './Components/InfoPane/InfoPane.js';
 import CycleParkingInformationPage from './CycleParkingInformationPage';
-import InstructionsPage from './InstructionsPage';
 
-import cycleparkingJson from './cycleparking-tools/cycleparking.json'
-import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json'
+import cycleparkingJson from './cycleparking-tools/cycleparking.json';
+import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json';
 import userSettings from './UserSettings';
 import SettingsPage from './SettingsPage';
-import ListViewPage from './ListViewPage';
 import themes from './Theme';
-import Card from './Components/Card'
-import Geolocation from 'react-native-geolocation-service';
 import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 
-import FAB from './Components/GavMaterial/BottomBar/FAB'
 import ListView from './Components/GavMaterial/ListView/ListView';
 
-const cycleParking = new CycleParking( true );
-cycleParking.setData( cycleparkingJson ).setEnums( cycleparkingEnumJson )
-
-// image sources
-const image_info = require(`./images/info.png`)
-const image_cog = require(`./images/cog.png`)
-const image_list = require(`./images/list.png`)
+const cycleParking = new CycleParking(true);
+cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
 
 // unchanging settings
-const WIN_WIDTH = Dimensions.get('window').width
-const BARNES_ROUNDABOUT_LATLON = [51.470624, -0.255804]
-const MAX_CIRCLE_RADIUS_METRES = 1000
+const WIN_WIDTH = Dimensions.get('window').width;
+const BARNES_ROUNDABOUT_LATLON = [51.470624, -0.255804];
+const MAX_CIRCLE_RADIUS_METRES = 1000;
+
 // https://mapstyle.withgoogle.com/
 const GOOGLE_MAP_STYLE = [
   {
-    "featureType": "poi",
-    "elementType": "labels.text",
-    "stylers": [
+    featureType: 'poi',
+    elementType: 'labels.text',
+    stylers: [
       {
-        "visibility": "off"
-      }
-    ]
+        visibility: 'off',
+      },
+    ],
   },
   {
-    "featureType": "poi.business",
-    "stylers": [
+    featureType: 'poi.business',
+    stylers: [
       {
-        "visibility": "off"
-      }
-    ]
+        visibility: 'off',
+      },
+    ],
   },
   {
-    "featureType": "road",
-    "elementType": "labels.icon",
-    "stylers": [
+    featureType: 'road',
+    elementType: 'labels.icon',
+    stylers: [
       {
-        "visibility": "off"
-      }
-    ]
+        visibility: 'off',
+      },
+    ],
   },
   {
-    "featureType": "transit",
-    "stylers": [
+    featureType: 'transit',
+    stylers: [
       {
-        "visibility": "off"
-      }
-    ]
-  }
-]
+        visibility: 'off',
+      },
+    ],
+  },
+];
 
 // helper functions
-const latitudeDeltaToMetres = ( latitudeDelta ) => {
-  const miles = latitudeDelta * 69 // 1 degree is approx 69 miles
-  const metres = miles / 0.00062137 // 0.00001° = 1.11 m
-  return metres
-}
+const latitudeDeltaToMetres = latitudeDelta => {
+  const miles = latitudeDelta * 69; // 1 degree is approx 69 miles
+  const metres = miles / 0.00062137; // 0.00001° = 1.11 m
+  return metres;
+};
 
 const App = () => {
-
   // reference to the map, use this to call map methods
   const mapRef = useRef(null);
   const tappedMarkerRef = useRef(null);
 
   // all markers
-  const [searchedMarkers, setSearchedMarkers] = useState([])
-  const [bookmarkedMarkers, setBookmarkedMarkers] = useState([])
-  const [bookmarkedCycleParkIds, setBookmarkedCycleParkIds] = useState([])
+  const [searchedMarkers, setSearchedMarkers] = useState([]);
+  const [bookmarkedMarkers, setBookmarkedMarkers] = useState([]);
+  const [bookmarkedCycleParkIds, setBookmarkedCycleParkIds] = useState([]);
 
   const [imageOverlay, setImageOverlay] = useState({
     visible: false,
     sources: [],
-  })
+  });
 
   // the floating text on initial load
-  const [floatingTextVisible, setFloatingTextVisible] = useState(true)
-  
+  const [floatingTextVisible, setFloatingTextVisible] = useState(true);
+
   // load bookmarks only once
   useEffect(() => {
     updateDrawableBookmarks();
   }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
-  
 
   const updateDrawableBookmarks = () => {
-    userSettings.get('bookmarks').then( cycleParkIds => {
-      setBookmarkedCycleParkIds(cycleParkIds)
+    userSettings.get('bookmarks').then(cycleParkIds => {
+      setBookmarkedCycleParkIds(cycleParkIds);
 
-      const temp_searchedMarkers = [...searchedMarkers]
+      const temp_searchedMarkers = [...searchedMarkers];
       for (let i = temp_searchedMarkers.length - 1; i >= 0; i--) {
-        if( cycleParkIds.indexOf(temp_searchedMarkers[i].cyclepark.getId()) !== -1 ){
-          temp_searchedMarkers.splice(i, 1)
+        if (
+          cycleParkIds.indexOf(temp_searchedMarkers[i].cyclepark.getId()) !== -1
+        ) {
+          temp_searchedMarkers.splice(i, 1);
         }
       }
-      setSearchedMarkers( temp_searchedMarkers )
+      setSearchedMarkers(temp_searchedMarkers);
 
-      cycleParking.getCycleParksById( cycleParkIds ).then( putBookmarkMarkersOnMap ).catch( console.log ) 
-    })
-  }
-
+      cycleParking
+        .getCycleParksById(cycleParkIds)
+        .then(putBookmarkMarkersOnMap)
+        .catch(console.log);
+    });
+  };
 
   // store the currently selected marker here
-  const [selectedMarker, setSelectedMarker] = useState(null)
+  const [selectedMarker, setSelectedMarker] = useState(null);
 
   // keep track of the region, we use this for latitudeDelta and calculating circle width
-  const [mapRegion, setRegion] = useState(null)
+  const [mapRegion, setRegion] = useState(null);
 
   // display the info pane
-  const [displayInfo, setDisplayInfo] = useState(false)
+  const [displayInfo, setDisplayInfo] = useState(false);
 
   // display the settings page
-  const [settingsPageVisible, setSettingsPageVisible] = useState(false)
-  
-  // display the list view
-  const [listViewVisible, setListViewVisible] = useState(false)
+  const [settingsPageVisible, setSettingsPageVisible] = useState(false);
 
+  // display the list view
+  const [listViewVisible, setListViewVisible] = useState(false);
 
   // camera
   const [mapCamera, setMapCamera] = useState({
@@ -181,51 +160,55 @@ const App = () => {
   // current circle settings
   const [circleProps, setCircleProps] = useState({
     visible: false,
-    center:{latitude:BARNES_ROUNDABOUT_LATLON[0], longitude: BARNES_ROUNDABOUT_LATLON[1]},
-    radius:100
-  })
+    center: {
+      latitude: BARNES_ROUNDABOUT_LATLON[0],
+      longitude: BARNES_ROUNDABOUT_LATLON[1],
+    },
+    radius: 100,
+  });
 
-  
   // some formatting to return marker
-  const renderMarker = ( marker, highlight_pin = false ) => {
-    const markerprops = {...marker, pinColor: highlight_pin ? 'blue' : 'red'}
-    return ( 
-      <Marker onPress={(comp, e)=>{onMarkerPress(comp, marker )}} {...markerprops} >
+  const renderMarker = (marker, highlight_pin = false) => {
+    const markerprops = {...marker, pinColor: highlight_pin ? 'blue' : 'red'};
+    return (
+      <Marker
+        onPress={(comp, e) => {
+          onMarkerPress(comp, marker);
+        }}
+        {...markerprops}>
         <Callout title={marker.title} description={marker.description} />
-      </Marker> 
-    )
-  }
+      </Marker>
+    );
+  };
 
   // When the region changes, update our copy of it
-  const onRegionChangeCompleteHandler = (e) => {
-    setRegion(e)
-  }
+  const onRegionChangeCompleteHandler = e => {
+    setRegion(e);
+  };
 
   // pan the camera to a given lat lon over a given time
   const setCameraOver = (lat, lon, duration_ms = 500, new_zoom = null) => {
-    
     const newCameraConfig = {
-      center:{
+      center: {
         latitude: lat,
-        longitude: lon
-      }
+        longitude: lon,
+      },
+    };
+
+    if (new_zoom) {
+      newCameraConfig['zoom'] = new_zoom;
     }
 
-    if(new_zoom){
-      newCameraConfig['zoom'] = new_zoom
-    }
-
-    mapRef.current.animateCamera(newCameraConfig,{duration:duration_ms})
-    
-  }
+    mapRef.current.animateCamera(newCameraConfig, {duration: duration_ms});
+  };
 
   const searchMap = async (lat, lon) => {
-    console.log('searchMap(lat, lon)',lat, lon);
+    console.log('searchMap(lat, lon)', lat, lon);
 
-    setFloatingTextVisible(false)
+    setFloatingTextVisible(false);
 
-    const tapped_lat = lat
-    const tapped_lon = lon
+    const tapped_lat = lat;
+    const tapped_lon = lon;
 
     // draw circle
     const radius = drawCircleToFitWidth(tapped_lat, tapped_lon);
@@ -251,62 +234,57 @@ const App = () => {
     selectedMarker && setSelectedMarker(null);
   };
 
-
   // when the map itself is pressed
-  const onPressHandler = async (e) => {
-    const tapped_lat = e.nativeEvent.coordinate.latitude
-    const tapped_lon = e.nativeEvent.coordinate.longitude
+  const onPressHandler = async e => {
+    const tapped_lat = e.nativeEvent.coordinate.latitude;
+    const tapped_lon = e.nativeEvent.coordinate.longitude;
 
-    searchMap(tapped_lat, tapped_lon)
-  }
+    searchMap(tapped_lat, tapped_lon);
+  };
 
-
-  const formatMarkerFromCyclePark = ( cyclepark_object ) => {
+  const formatMarkerFromCyclePark = cyclepark_object => {
     return {
       id: cyclepark_object.getId(), // for the react id
       key: cyclepark_object.getId(), // for the react key
       coordinate: {
         latitude: cyclepark_object.getLat(),
-        longitude: cyclepark_object.getLon()
+        longitude: cyclepark_object.getLon(),
       },
       cyclepark: cyclepark_object,
       // callout options, remove to disable
       // title: cyclepark_object.getName(),
       // description: `${cyclepark_object.getType()} (${cyclepark_object.getSpaces()} spaces) (${!cyclepark_object.isSecure() ? 'not ' : ''}secure)`
-    }
-  }
-
+    };
+  };
 
   // create markers for a given set of CyclePark objects
-  const putBookmarkMarkersOnMap = ( cycleparks ) => {
-    const new_markers = []
-    cycleparks.forEach( cyclepark => {
-        new_markers.push( formatMarkerFromCyclePark(cyclepark) )
-    })
-    setBookmarkedMarkers( new_markers )
-  }
-  
+  const putBookmarkMarkersOnMap = cycleparks => {
+    const new_markers = [];
+    cycleparks.forEach(cyclepark => {
+      new_markers.push(formatMarkerFromCyclePark(cyclepark));
+    });
+    setBookmarkedMarkers(new_markers);
+  };
+
   // create markers for a given set of CyclePark objects
-  const putCycleParkMarkersOnMap = ( cycleparks, are_bookmarks = false ) => {
-    const new_markers = []
-    cycleparks.forEach( cyclepark => {
+  const putCycleParkMarkersOnMap = (cycleparks, are_bookmarks = false) => {
+    const new_markers = [];
+    cycleparks.forEach(cyclepark => {
       // skip any that exist in the bookmarks
-      if( bookmarkedCycleParkIds.includes( cyclepark.getId() ) ) return;
-      new_markers.push( formatMarkerFromCyclePark(cyclepark) )
-    })
-    setSearchedMarkers( new_markers )
-  }
-
+      if (bookmarkedCycleParkIds.includes(cyclepark.getId())) return;
+      new_markers.push(formatMarkerFromCyclePark(cyclepark));
+    });
+    setSearchedMarkers(new_markers);
+  };
 
   // const getAllMarkers = () => {
   //   return markers;
   // }
 
-
   /**
-   * 
-   * @param {number} lat 
-   * @param {number} lon 
+   *
+   * @param {number} lat
+   * @param {number} lon
    * @returns {number} calculated radius in METRES
    */
   const drawCircleToFitWidth = (lat, lon) => {
@@ -315,7 +293,10 @@ const App = () => {
       latitude: lat,
       longitude: lon,
     };
-    const new_radius = Math.min(latitudeDeltaToMetres(latitudeDelta) / 3, MAX_CIRCLE_RADIUS_METRES);
+    const new_radius = Math.min(
+      latitudeDeltaToMetres(latitudeDelta) / 3,
+      MAX_CIRCLE_RADIUS_METRES,
+    );
     setCircleProps(prevState => {
       const newState = {
         ...prevState,
@@ -325,67 +306,49 @@ const App = () => {
       };
       return newState;
     });
-    return new_radius
+    return new_radius;
   };
 
-
-  const toggleInfoPane = (e) => {
-    setDisplayInfo( !displayInfo )
-  }
-
+  const toggleInfoPane = e => {
+    setDisplayInfo(!displayInfo);
+  };
 
   const onMarkerPress = (comp, e) => {
-    setSelectedMarker( e )
-    setFloatingTextVisible( false )
-  }
+    setSelectedMarker(e);
+    setFloatingTextVisible(false);
+  };
 
   const toggleSettingsPage = () => {
-    console.log('toggleSettingsPage()')
-    closeAllViews()
-    setSettingsPageVisible( !settingsPageVisible )
-  }
+    console.log('toggleSettingsPage()');
+    closeAllViews();
+    setSettingsPageVisible(!settingsPageVisible);
+  };
 
   const toggleListView = () => {
-    console.log('Toggle List View!!!')
-    closeAllViews()
-    setListViewVisible( !listViewVisible )
-  }
+    console.log('Toggle List View!!!');
+    closeAllViews();
+    setListViewVisible(!listViewVisible);
+  };
 
   const searchAtCurrentCameraPosition = async () => {
-    console.log('searchAtCurrentCameraPosition()')
+    console.log('searchAtCurrentCameraPosition()');
     const currentCamera = await mapRef.current.getCamera();
-    const lat = currentCamera.center.latitude
-    const lon = currentCamera.center.longitude
-    searchMap(lat, lon)
-  }
+    const lat = currentCamera.center.latitude;
+    const lon = currentCamera.center.longitude;
+    searchMap(lat, lon);
+  };
 
   /**
    * set all views not visible
    */
   const closeAllViews = () => {
-    console.log('closeAllViews()')
-    setSettingsPageVisible( false )
-    setListViewVisible( false )
+    console.log('closeAllViews()');
+    setSettingsPageVisible(false);
+    setListViewVisible(false);
   };
 
   return (
     <View style={styles.container}>
-      {/* draw an info pane if there is a marker selected */}
-      {selectedMarker && (
-        <InfoPane
-          marker={selectedMarker}
-          onShowInfoPane={toggleInfoPane}
-          onBookmarksChanged={updateDrawableBookmarks}
-          onShowImageOverlay={imagesArray => {
-            // imagesArray is an array of urls to images
-            setImageOverlay({
-              visible: !imageOverlay.visible,
-              sources: imagesArray,
-            });
-          }}
-        />
-      )}
-
       {/* draw the images overlay if it is visible */}
       {imageOverlay.visible && (
         <TouchableOpacity
@@ -457,6 +420,22 @@ const App = () => {
           {circleProps.visible && <Circle {...circleProps} />}
         </MapView>
 
+        {/* draw an info pane if there is a marker selected */}
+        {selectedMarker && (
+          <InfoPane
+            marker={selectedMarker}
+            onShowInfoPane={toggleInfoPane}
+            onBookmarksChanged={updateDrawableBookmarks}
+            onShowImageOverlay={imagesArray => {
+              // imagesArray is an array of urls to images
+              setImageOverlay({
+                visible: !imageOverlay.visible,
+                sources: imagesArray,
+              });
+            }}
+          />
+        )}
+
         {floatingTextVisible && (
           <Text
             style={{
@@ -481,30 +460,22 @@ const App = () => {
           <ListView
             searchedMarkers={searchedMarkers}
             bookmarkedMarkers={bookmarkedMarkers}
+            optionSelected={markerObject => {
+              // move camera here
+              const lat = markerObject.coordinate.latitude;
+              const lon = markerObject.coordinate.longitude;
+              setCameraOver(lat, lon, 500, 19);
+              setSelectedMarker(markerObject);
+              setFloatingTextVisible(false);
+              setListViewVisible(false);
+            }}
           />
         )}
-
       </View>
 
       {settingsPageVisible && (
         <SettingsPage onBookmarksChanged={updateDrawableBookmarks} />
       )}
-
-      {/* {listViewVisible && (
-        <ListViewPage
-          searchedMarkers={searchedMarkers}
-          bookmarkedMarkers={bookmarkedMarkers}
-          optionSelected={markerObject => {
-            // move camera here
-            const lat = markerObject.coordinate.latitude;
-            const lon = markerObject.coordinate.longitude;
-            setCameraOver(lat, lon, 500, 19);
-            setSelectedMarker(markerObject);
-            setFloatingTextVisible(false);
-            setListViewVisible(false);
-          }}
-        />
-      )} */}
 
       {/* The bottom bar of the app.  */}
       {/* Contains menu button, settings button, and FAB(s) */}
@@ -520,9 +491,9 @@ const App = () => {
 const styles = StyleSheet.create({
   instructionsPage: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'green'
+    backgroundColor: 'green',
   },
-  instructionsButton:{
+  instructionsButton: {
     width: '10%',
     aspectRatio: 1,
     position: 'absolute',
@@ -530,10 +501,10 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: 'white',
   },
-  instructionsButtonImage:{
+  instructionsButtonImage: {
     resizeMode: 'center',
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
   container: {
     ...StyleSheet.absoluteFillObject,
@@ -543,8 +514,9 @@ const styles = StyleSheet.create({
   },
   map_container: {
     // ...StyleSheet.absoluteFillObject,
-    width:'100%', height:'100%',
-    flex:9,
+    width: '100%',
+    height: '100%',
+    flex: 9,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
@@ -553,21 +525,19 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontSize: 14,
-    color: 'white'
+    color: 'white',
   },
   mapCluster: {
     width: 22,
     height: 22,
-    borderRadius: 22/2,
-    backgroundColor: 'red'
+    borderRadius: 22 / 2,
+    backgroundColor: 'red',
   },
   mapClusterText: {
     fontSize: 14,
     color: 'white',
     textAlign: 'center', // <-- the magic
-  }
- });
+  },
+});
 
 export default App;
-
-

@@ -42,6 +42,9 @@ class InfoPane extends Component{
 
     this.style = StyleSheet.create({
       outer:{
+        position: 'absolute',
+        top: 0,
+
         // flex: 2,
         width: '100%',
         backgroundColor: 'blue',

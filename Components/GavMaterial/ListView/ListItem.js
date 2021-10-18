@@ -20,12 +20,14 @@ const image_bookmark = require('./../../../images/bookmark.png');
  * props:
  *  marker
  *  style
+ *  onPress
  */
 class ListItem extends Component {
   constructor(props) {
     super(props);
 
     this.marker = props.marker;
+    this.onPress = props.onPress;
 
     const defaultStyles = {
       outer: {
@@ -59,7 +61,12 @@ class ListItem extends Component {
     }
 
     return (
-      <TouchableOpacity style={this.style.outer}>
+      <TouchableOpacity 
+      style={this.style.outer}
+      onPress={()=>{
+        this.onPress ? this.onPress(this.marker) : null
+      }}
+      >
         
         {distString && (
           <View style={{
