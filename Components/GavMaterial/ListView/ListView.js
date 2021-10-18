@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { StyleSheet, SafeAreaView, FlatList } from "react-native"
+import { Text, StyleSheet, SafeAreaView, FlatList, View, Button } from "react-native"
 import themes from "../../../Theme"
 import ListItem from "./ListItem"
 
@@ -32,6 +32,11 @@ class ListView extends Component{
    * combine bookmarked and search results markers
    */
   combineAndOrderMarkers(){
+
+    this.bookmarkedMarkers.forEach(marker => {
+      marker.cyclepark.isBookmark = true
+    })
+
     const allMarkers = [
       ...this.searchedMarkers,
       ...this.bookmarkedMarkers,
@@ -62,9 +67,26 @@ class ListView extends Component{
     return(
       //TODO continue replacing the list view part
       <SafeAreaView style={this.style.outer}>
+
+        {/* top text bit */}
+        <View style={{
+          backgroundColor: themes.main.primary,
+          height: '7%',
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          paddingHorizontal: 10
+        }}>
+          <Text style={{
+            color: themes.main.text.onPrimary,
+            fontSize: 20,
+            fontWeight: 'bold'
+          }}>List view</Text>
+        </View>
+
+        {/* scrollable list */}
         <FlatList 
           style={{
-            backgroundColor: 'brown',
             flexDirection: 'column'
           }}
           data={this.combineAndOrderMarkers()}
