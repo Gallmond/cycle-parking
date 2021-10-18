@@ -27,7 +27,6 @@ import CycleParkingInformationPage from './CycleParkingInformationPage';
 import cycleparkingJson from './cycleparking-tools/cycleparking.json';
 import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json';
 import userSettings from './UserSettings';
-import {SettingsPage as oldSettingsPage} from './SettingsPage';
 import SettingsPage from './Components/GavMaterial/SettingsPage/SettingsPage'
 
 import themes from './Theme';
