@@ -33,6 +33,7 @@ import themes from './Theme';
 import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 
 import ListView from './Components/GavMaterial/ListView/ListView';
+import InformationBar from './Components/GavMaterial/InformationBar/InformationBar';
 
 const cycleParking = new CycleParking(true);
 cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
@@ -423,8 +424,15 @@ const App = () => {
           {circleProps.visible && <Circle {...circleProps} />}
         </MapView>
 
-        {/* draw an info pane if there is a marker selected */}
         {selectedMarker && (
+          //TODO selecting new markers does not rerender 
+          <InformationBar 
+            selectedMarker={selectedMarker}
+          />
+        )}
+
+        {/* The top section with the bits of info for the selected cyclepark */}
+        {false && selectedMarker && (
           <InfoPane
             marker={selectedMarker}
             onShowInfoPane={toggleInfoPane}
