@@ -39,8 +39,6 @@ class InformationBarIcon extends Component {
 
   render() {
 
-    console.log('this.contentOpacity', this.contentOpacity);
-
     return (
       <TouchableOpacity
         onPress={this.onPress}

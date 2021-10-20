@@ -16,18 +16,29 @@ const image_umbrella = require('./../../../images/umbrella.png');
 /**
  * props:
  *  selectedMarker
+ *  onShowPhotos
  */
 class InformationBar extends Component{
   constructor(props){
     super(props)
-
     this.selectedMarker = this.props.selectedMarker
+    this.onShowPhotos = this.props.onShowPhotos
 
+    console.log('1 Object.keys(this.props)', Object.keys(this.props));
+    console.log('2 typeof this.onShowPhotos', typeof this.onShowPhotos);
   }
 
   photoIconPressed(){
-    console.log('InformationBar.photoIconPressed()')
-    //TODO handle image showing. pass out the images to a handler set in app.js
+    //TODO this isn't working?
+    console.log('3 InformationBar.photoIconPressed()')
+    console.log('4 typeof this.onShowPhotos', typeof this.onShowPhotos);
+    console.log('5 Object.keys(this.props)', Object.keys(this.props));
+    if(typeof this.onShowPhotos === 'function'){
+      this.onShowPhotos([
+        this.marker.cyclepark.getPicurl1(),
+        this.marker.cyclepark.getPicurl2(),
+      ])
+    }
   }
 
   render(){

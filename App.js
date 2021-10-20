@@ -428,6 +428,13 @@ const App = () => {
           //TODO selecting new markers does not rerender 
           <InformationBar 
             selectedMarker={selectedMarker}
+            onShowPhotos={(imagesArray)=>{
+              setImageOverlay({
+                // imagesArray is an array of urls to images
+                visible: !imageOverlay.visible,
+                sources: imagesArray,
+              });
+            }}
           />
         )}
 
