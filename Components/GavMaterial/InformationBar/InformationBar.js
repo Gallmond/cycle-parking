@@ -28,8 +28,8 @@ class InformationBar extends Component{
   photoIconPressed = ()=>{
     if(typeof this.onShowPhotos === 'function'){
       this.onShowPhotos([
-        this.selectedMarker.cyclepark.getPicurl1(),
-        this.selectedMarker.cyclepark.getPicurl2(),
+        this.props.selectedMarker.cyclepark.getPicurl1(),
+        this.props.selectedMarker.cyclepark.getPicurl2(),
       ])
     }
   }

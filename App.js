@@ -35,6 +35,7 @@ import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 
 import ListView from './Components/GavMaterial/ListView/ListView';
 import InformationBar from './Components/GavMaterial/InformationBar/InformationBar';
+import ImagePopup from './Components/GavMaterial/ImagePopup/ImagePopup';
 
 const cycleParking = new CycleParking(true);
 cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
@@ -112,6 +113,9 @@ const App = () => {
     updateDrawableBookmarks();
   }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
 
+  // re-read bookmarks and update the current bookmarked set
+  // remove bookmarked ones from the searched set
+  // re-read the cycleParking into and putBookmarkMarkersOnMap
   const updateDrawableBookmarks = () => {
     userSettings.get('bookmarks').then(cycleParkIds => {
       setBookmarkedCycleParkIds(cycleParkIds);
@@ -386,10 +390,10 @@ const App = () => {
         </MapView>
 
         {selectedMarker && (
-          //TODO selecting new markers does not rerender
           <InformationBar
             selectedMarker={selectedMarker}
             onShowPhotos={imagesArray => {
+              console.log('imagesArray', imagesArray);
               setImageOverlay({
                 // imagesArray is an array of urls to images
                 visible: !imageOverlay.visible,
@@ -399,46 +403,17 @@ const App = () => {
           />
         )}
 
-        {/* fill the screen with the photos overlay */}
-        {/* draw the images overlay if it is visible */}
+        {/* fill the screen with the photos overlay if visible */}
         {imageOverlay.visible && (
-          <TouchableOpacity
-            onPress={() => {
+          <ImagePopup 
+            onPress={()=>{
               setImageOverlay({...imageOverlay, visible: false});
             }}
-            style={{
-              height: '100%',
-              width: '100%',
-              backgroundColor: themes.main.background,
-              flexDirection: 'column',
-            }}>
-            {imageOverlay.sources.map(src => {
-            return (
-              <Image
-                style={{
-                  width: undefined,
-                  height: undefined,
-                  flex: 1,
-                  resizeMode: 'contain',
-                }}
-                key={src}
-                source={{uri: src}}
-              />
-            );
-          })}
-
-          <Text
-            style={{
-              textAlignVertical: 'center',
-              position: 'absolute',
-              color: 'black',
-              fontSize: 35,
-            }}>
-            Tap anywhere to close
-          </Text>
-          </TouchableOpacity>
+            imageOverlay={imageOverlay}
+          />
         )}
 
+        {/* instruction text */}
         {floatingTextVisible && (
           <Text
             style={{
@@ -451,14 +426,7 @@ const App = () => {
           </Text>
         )}
 
-        {displayInfo && selectedMarker && (
-          <CycleParkingInformationPage
-            style={{...StyleSheet.absoluteFillObject}}
-            cyclePark={selectedMarker.cyclepark}
-            onBookmarksChanged={updateDrawableBookmarks}
-          />
-        )}
-
+        {/* side list view */}
         {listViewVisible && (
           <ListView
             searchedMarkers={searchedMarkers}
@@ -494,33 +462,13 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  instructionsPage: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'green',
-  },
-  instructionsButton: {
-    width: '10%',
-    aspectRatio: 1,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    backgroundColor: 'white',
-  },
-  instructionsButtonImage: {
-    resizeMode: 'center',
-    width: '100%',
-    height: '100%',
-  },
   container: {
     ...StyleSheet.absoluteFillObject,
-    // width: '100%',
-    // height: '100%',
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
   map_container: {
-    // ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
     flex: 9,
@@ -529,21 +477,6 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
-  },
-  highlight: {
-    fontSize: 14,
-    color: 'white',
-  },
-  mapCluster: {
-    width: 22,
-    height: 22,
-    borderRadius: 22 / 2,
-    backgroundColor: 'red',
-  },
-  mapClusterText: {
-    fontSize: 14,
-    color: 'white',
-    textAlign: 'center', // <-- the magic
   },
 });
 
