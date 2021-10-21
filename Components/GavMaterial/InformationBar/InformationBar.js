@@ -23,20 +23,13 @@ class InformationBar extends Component{
     super(props)
     this.selectedMarker = this.props.selectedMarker
     this.onShowPhotos = this.props.onShowPhotos
-
-    console.log('1 Object.keys(this.props)', Object.keys(this.props));
-    console.log('2 typeof this.onShowPhotos', typeof this.onShowPhotos);
   }
 
-  photoIconPressed(){
-    //TODO this isn't working?
-    console.log('3 InformationBar.photoIconPressed()')
-    console.log('4 typeof this.onShowPhotos', typeof this.onShowPhotos);
-    console.log('5 Object.keys(this.props)', Object.keys(this.props));
+  photoIconPressed = ()=>{
     if(typeof this.onShowPhotos === 'function'){
       this.onShowPhotos([
-        this.marker.cyclepark.getPicurl1(),
-        this.marker.cyclepark.getPicurl2(),
+        this.selectedMarker.cyclepark.getPicurl1(),
+        this.selectedMarker.cyclepark.getPicurl2(),
       ])
     }
   }

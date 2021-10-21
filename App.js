@@ -15,6 +15,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from 'react-native';
 
 import MapView from 'react-native-map-clustering';
@@ -27,7 +28,7 @@ import CycleParkingInformationPage from './CycleParkingInformationPage';
 import cycleparkingJson from './cycleparking-tools/cycleparking.json';
 import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json';
 import userSettings from './UserSettings';
-import SettingsPage from './Components/GavMaterial/SettingsPage/SettingsPage'
+import SettingsPage from './Components/GavMaterial/SettingsPage/SettingsPage';
 
 import themes from './Theme';
 import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
@@ -350,47 +351,7 @@ const App = () => {
   };
 
   return (
-    <View style={styles.container}>
-
-      {/* draw the images overlay if it is visible */}
-      {imageOverlay.visible && (
-        <TouchableOpacity
-          onPress={() => {
-            setImageOverlay({...imageOverlay, visible: false});
-          }}
-          style={{
-            height: '100%',
-            width: '100%',
-            backgroundColor: themes.main.background,
-            flexDirection: 'column',
-          }}>
-          {imageOverlay.sources.map(src => {
-            return (
-              <Image
-                style={{
-                  width: undefined,
-                  height: undefined,
-                  flex: 1,
-                  resizeMode: 'contain',
-                }}
-                key={src}
-                source={{uri: src}}
-              />
-            );
-          })}
-
-          <Text
-            style={{
-              textAlignVertical: 'center',
-              position: 'absolute',
-              color: themes.main.text.onPrimary,
-              fontSize: 35,
-            }}>
-            Tap anywhere to close
-          </Text>
-        </TouchableOpacity>
-      )}
-
+    <SafeAreaView style={styles.container}>
       {/* MAP CONTAINER START */}
       <View style={styles.map_container}>
         <MapView
@@ -425,10 +386,10 @@ const App = () => {
         </MapView>
 
         {selectedMarker && (
-          //TODO selecting new markers does not rerender 
-          <InformationBar 
+          //TODO selecting new markers does not rerender
+          <InformationBar
             selectedMarker={selectedMarker}
-            onShowPhotos={(imagesArray)=>{
+            onShowPhotos={imagesArray => {
               setImageOverlay({
                 // imagesArray is an array of urls to images
                 visible: !imageOverlay.visible,
@@ -438,20 +399,44 @@ const App = () => {
           />
         )}
 
-        {/* The top section with the bits of info for the selected cyclepark */}
-        {false && selectedMarker && (
-          <InfoPane
-            marker={selectedMarker}
-            onShowInfoPane={toggleInfoPane}
-            onBookmarksChanged={updateDrawableBookmarks}
-            onShowImageOverlay={imagesArray => {
-              // imagesArray is an array of urls to images
-              setImageOverlay({
-                visible: !imageOverlay.visible,
-                sources: imagesArray,
-              });
+        {/* fill the screen with the photos overlay */}
+        {/* draw the images overlay if it is visible */}
+        {imageOverlay.visible && (
+          <TouchableOpacity
+            onPress={() => {
+              setImageOverlay({...imageOverlay, visible: false});
             }}
-          />
+            style={{
+              height: '100%',
+              width: '100%',
+              backgroundColor: themes.main.background,
+              flexDirection: 'column',
+            }}>
+            {imageOverlay.sources.map(src => {
+            return (
+              <Image
+                style={{
+                  width: undefined,
+                  height: undefined,
+                  flex: 1,
+                  resizeMode: 'contain',
+                }}
+                key={src}
+                source={{uri: src}}
+              />
+            );
+          })}
+
+          <Text
+            style={{
+              textAlignVertical: 'center',
+              position: 'absolute',
+              color: 'black',
+              fontSize: 35,
+            }}>
+            Tap anywhere to close
+          </Text>
+          </TouchableOpacity>
         )}
 
         {floatingTextVisible && (
@@ -504,7 +489,7 @@ const App = () => {
         onListViewButtonPress={toggleListView}
         onSearchButtonPress={searchAtCurrentCameraPosition}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -528,6 +513,8 @@ const styles = StyleSheet.create({
   },
   container: {
     ...StyleSheet.absoluteFillObject,
+    // width: '100%',
+    // height: '100%',
     flex: 1,
     justifyContent: 'flex-end',
     alignItems: 'center',
