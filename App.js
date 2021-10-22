@@ -120,6 +120,7 @@ const App = () => {
   // remove bookmarked ones from the searched set
   // re-read the cycleParking into and putBookmarkMarkersOnMap
   const updateDrawableBookmarks = () => {
+    console.log('updateDrawableBookmarks');
     userSettings.get('bookmarks').then(cycleParkIds => {
       setBookmarkedCycleParkIds(cycleParkIds);
 
@@ -409,7 +410,11 @@ const App = () => {
 
         {/* the nav and bookmark buttons */}
         {selectedMarker && (
-          <FloatingButtons selectedMarker={selectedMarker} />
+          <FloatingButtons
+            selectedMarker={selectedMarker}
+            isCurrentBookmark={bookmarkedCycleParkIds.indexOf( selectedMarker.cyclepark.getId() ) !== -1}
+            onBookmarksChanged={updateDrawableBookmarks}
+          />
         )}
 
         {/* fill the screen with the photos overlay if visible */}

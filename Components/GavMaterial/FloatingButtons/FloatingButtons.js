@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {View, Pressable, Dimensions, Image, Linking} from 'react-native';
 import themes from '../../../Theme';
+import userSettings from '../../../UserSettings';
 
 const WIN_HEIGHT = Dimensions.get('window').height;
 const image_nav_arrow = require('./../../../images/icons/navigation-arrow.png')
@@ -9,10 +10,13 @@ const image_bookmark = require('./../../../images/icons/bookmark.png')
 /**
  * props
  *  selectedMarker
+ *  onBookmarksChanged
+ *  isCurrentBookmark
  */
 class FloatingButtons extends Component {
   constructor(props) {
     super(props);
+    console.log('this.props.isCurrentBookmark', this.props.isCurrentBookmark);
   }
 
   openGoogleMapsWithDirections(){
@@ -25,18 +29,51 @@ class FloatingButtons extends Component {
     Linking.openURL(gmap_url)
   }
 
-  bookmarkButton(){
-    return this.getButton(image_bookmark, ()=>{
-      console.log('//TODO BOOKMARK')
+  /**
+   * toggle the bookmark for the current cyclepark
+   * call onBookmarksChanged prop callback if it is set
+   */
+   toggleBookmarkForCurrentCyclePark(){
+
+    const cyclePark = this.props.selectedMarker.cyclepark
+    const cyclepark_id = cyclePark.getId()
+
+    userSettings.get('bookmarks').then( bookmarks =>{
+
+      bookmarks = new Set( Array.isArray(bookmarks) ? bookmarks : [] )
+
+      // if this is already bookmarked, set it. If not, remove it
+      bookmarks.has( cyclepark_id )
+        ? bookmarks.delete( cyclepark_id )
+        : bookmarks.add( cyclepark_id )
+
+      userSettings.set( 'bookmarks', Array.from( bookmarks ) ).then( success => {
+        
+        if(typeof this.props.onBookmarksChanged === 'function'){
+          this.props.onBookmarksChanged( Array.from( bookmarks ) )
+        }
+
+      });
     })
+  }
+
+  bookmarkButton(){
+    const opacity = this.props.isCurrentBookmark
+      ? 1
+      : 0.3
+    return this.getButton(image_bookmark, ()=>{
+      console.log('Bookmark button pressed')
+      this.toggleBookmarkForCurrentCyclePark()
+    },opacity)
   }
   navButton(){
     return this.getButton(image_nav_arrow, ()=>{
+      console.log('Nav button pressed')
       this.openGoogleMapsWithDirections()
     })
   }
 
-  getButton(iconImageSource, onPress = null){
+  getButton(iconImageSource, onPress = null, iconImageOpacity = 1){
     return(
       <Pressable
         onPress={onPress}
@@ -45,6 +82,7 @@ class FloatingButtons extends Component {
           padding: 15
         }}>
           <Image style={{
+            opacity: iconImageOpacity,
             width:'100%',
             height:'100%',
             resizeMode: 'stretch'
