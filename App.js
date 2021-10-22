@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
   SafeAreaView,
+  Pressable,
 } from 'react-native';
 
 import MapView from 'react-native-map-clustering';
@@ -36,12 +37,14 @@ import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 import ListView from './Components/GavMaterial/ListView/ListView';
 import InformationBar from './Components/GavMaterial/InformationBar/InformationBar';
 import ImagePopup from './Components/GavMaterial/ImagePopup/ImagePopup';
+import FloatingButtons from './Components/GavMaterial/FloatingButtons/FloatingButtons';
 
 const cycleParking = new CycleParking(true);
 cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
 
 // unchanging settings
 const WIN_WIDTH = Dimensions.get('window').width;
+const WIN_HEIGHT = Dimensions.get('window').height;
 const BARNES_ROUNDABOUT_LATLON = [51.470624, -0.255804];
 const MAX_CIRCLE_RADIUS_METRES = 1000;
 
@@ -389,6 +392,7 @@ const App = () => {
           {circleProps.visible && <Circle {...circleProps} />}
         </MapView>
 
+        {/* bar along the top with the space info */}
         {selectedMarker && (
           <InformationBar
             selectedMarker={selectedMarker}
@@ -403,10 +407,15 @@ const App = () => {
           />
         )}
 
+        {/* the nav and bookmark buttons */}
+        {selectedMarker && (
+          <FloatingButtons selectedMarker={selectedMarker} />
+        )}
+
         {/* fill the screen with the photos overlay if visible */}
         {imageOverlay.visible && (
-          <ImagePopup 
-            onPress={()=>{
+          <ImagePopup
+            onPress={() => {
               setImageOverlay({...imageOverlay, visible: false});
             }}
             imageOverlay={imageOverlay}
