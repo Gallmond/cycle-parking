@@ -16,6 +16,7 @@ import {
   SafeAreaView,
   PermissionsAndroid,
   Pressable,
+  Image,
 } from 'react-native';
 
 import MapView from 'react-native-map-clustering';
@@ -514,31 +515,41 @@ const App = () => {
           {circleProps.visible && <Circle {...circleProps} />}
         </MapView>
 
-
-          {/* TEMP TEST BUTTON */}
-          <Pressable onPress={()=>{
-            console.log('=== test button ===')
-
-            getCurrentDeviceLocation().then((position)=>{
-              console.log('got position', position)
-              setCameraOver(position.coords.latitude, position.coords.longitude, 500)
-            }).catch(err => {
-              console.log('getCurrentDeviceLocation rejected', err)
-            })
-
-          }} style={{
-            position:'absolute',
-            top:'50%',
-            left:0,
-            backgroundColor: 'green',
-            ...themes.debugHighlight
+        {/* focus on me button */}
+        <Pressable
+          onPress={() => {
+            getCurrentDeviceLocation()
+              .then(position => {
+                const thisPosition = {
+                  lat: position.coords.latitude,
+                  lon: position.coords.longitude,
+                };
+                setCurrentDeviceLocation(thisPosition)
+                setCameraOver(thisPosition.lat, thisPosition.lon,500,);
+              })
+              .catch(err => {
+                console.log('getCurrentDeviceLocation rejected', err);
+              });
+          }}
+          style={{
+            height: '10%',
+            aspectRatio: 1,
+            position: 'absolute',
+            top: '50%',
+            left: 0,
+            padding: 5,
+            // ...themes.debugHighlight
           }}>
-            <Text style={{
-              color:'white',
-              fontSize: 20
-            }}>TEST</Text>
-          </Pressable>
-
+            <Image
+            style={{
+              width: undefined,
+              height: undefined,
+              flex: 1,
+              opacity: 0.5
+            }}
+            source={require('./images/icons/target.png')}
+            />
+        </Pressable>
 
         {/* bar along the top with the space info */}
         {selectedMarker && (
@@ -559,10 +570,14 @@ const App = () => {
         {selectedMarker && (
           <FloatingButtons
             selectedMarker={selectedMarker}
-            isCurrentBookmark={bookmarkedCycleParkIds.indexOf( selectedMarker.cyclepark.getId() ) !== -1}
-            onBookmarksChanged={()=>{
-              updateDrawableBookmarks()
-              setListViewVisible(false)
+            isCurrentBookmark={
+              bookmarkedCycleParkIds.indexOf(
+                selectedMarker.cyclepark.getId(),
+              ) !== -1
+            }
+            onBookmarksChanged={() => {
+              updateDrawableBookmarks();
+              setListViewVisible(false);
             }}
           />
         )}
@@ -598,12 +613,12 @@ const App = () => {
             bookmarkedMarkers={bookmarkedMarkers}
             optionSelected={markerObject => {
               // move camera here
-              const lat = markerObject.coordinate.latitude
-              const lon = markerObject.coordinate.longitude
-              setCameraOver(lat, lon, 500, 19)
-              setSelectedMarker(markerObject)
-              setFloatingTextVisible(false)
-              setListViewVisible(false)
+              const lat = markerObject.coordinate.latitude;
+              const lon = markerObject.coordinate.longitude;
+              setCameraOver(lat, lon, 500, 19);
+              setSelectedMarker(markerObject);
+              setFloatingTextVisible(false);
+              setListViewVisible(false);
             }}
           />
         )}
