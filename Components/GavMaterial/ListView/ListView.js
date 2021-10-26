@@ -8,6 +8,7 @@ import ListItem from "./ListItem"
  *  searchedMarkers
  *  bookmarkedMarkers
  *  optionSelected
+ *  currentDeviceLocation
  */
 class ListView extends Component{
 
@@ -35,6 +36,31 @@ class ListView extends Component{
 
   }
 
+  getDistBetweenTwoPoints = (latlon_1, latlon_2) => {
+    const [lat1, lon1] = latlon_1
+    const [lat2, lon2] = latlon_2
+    const R = 6371e3 // radius of the earth in metres (give or take)
+    const lat1rads = lat1 * Math.PI/180 // φ, λ in radians
+    const lat2rads = lat2 * Math.PI/180
+    const latdeltarads = (lat2-lat1) * Math.PI/180
+    const londeltarads = (lon2-lon1) * Math.PI/180
+
+    const a = Math.sin(latdeltarads/2) * Math.sin(latdeltarads/2) +
+              Math.cos(lat1rads) * Math.cos(lat2rads) *
+              Math.sin(londeltarads/2) * Math.sin(londeltarads/2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+
+    return R * c // in metres
+  }
+
+  distanceFromCurrentLocation(lat, lon){
+    return this.getDistBetweenTwoPoints(
+      [this.props.currentDeviceLocation.lat, this.props.currentDeviceLocation.lon],
+      [lat, lon]
+    )
+  }
+
+
   /**
    * combine bookmarked and search results markers
    */
@@ -49,8 +75,20 @@ class ListView extends Component{
       : [ ...this.searchedMarkers, ...this.bookmarkedMarkers, ]
 
     allMarkers.sort((a, b) => {
-      let a_dist = a.cyclepark.getDistance()
-      let b_dist = b.cyclepark.getDistance()
+
+      let a_dist = null, b_dist = null
+
+      if(this.props.currentDeviceLocation !== null){
+        // get distance from current location
+        a_dist = this.distanceFromCurrentLocation( a.cyclepark.getLat(), a.cyclepark.getLon() )
+        a.cyclepark.setDistance(a_dist)
+        b_dist = this.distanceFromCurrentLocation( b.cyclepark.getLat(), b.cyclepark.getLon() )
+        b.cyclepark.setDistance(b_dist)
+      }else{
+        // distance from search centre
+        a_dist = a.cyclepark.getDistance()
+        b_dist = b.cyclepark.getDistance()
+      }
 
       // if distance is null it should go first (probably a bookmark)
       if (a_dist === null) a_dist = -65000

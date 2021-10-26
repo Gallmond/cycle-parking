@@ -223,7 +223,7 @@ class CycleParking{
               // skip it if we're outside of the circle
               if(dist_from_centre > radius_in_metres) continue
 
-              // create object and set distance
+              // create object and set distance from search centre
               const cyclePark = new CyclePark(place).setDistance( dist_from_centre );
 
               // collect it

@@ -140,7 +140,7 @@ const App = () => {
    * Keep track of user intention separate from device permission. If user has
    * said no, don't keep asking. Ask once here at the start
    */
-  const [canAccessDeviceLocation, setCanAccessDeviceLocation] = useState(null)
+  const [currentDeviceLocation, setCurrentDeviceLocation] = useState(null)
   const [defaultLocation, setDefaultLocation] = useState({
     // london bridge
     lat: 51.5079,
@@ -151,16 +151,19 @@ const App = () => {
     console.log('userEffect for canAccessDeviceLocation')
     userSettings.get('canAccessDeviceLocation').then(val => {
       console.log('canAccessDeviceLocation from settings:', val)
-      setCanAccessDeviceLocation(val)
       // if we don't have it from settings, request it one more time
       if( val !== true ){
         requestDeviceLocationPermission().then( canAccess => {
-          setCanAccessDeviceLocation( canAccess )
           userSettings.set('canAccessDeviceLocation', canAccess)
         })
       }else{
         getCurrentDeviceLocation().then(position => {
-          setDefaultLocation({lat: position.coords.latitude, lon: position.coords.longitude})
+          const thisPosition = {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          };
+          setCurrentDeviceLocation(thisPosition)
+          setDefaultLocation(thisPosition)
         })
       }
     })
@@ -322,6 +325,15 @@ const App = () => {
 
     setFloatingTextVisible(false);
 
+    // update user pos
+    getCurrentDeviceLocation().then(pos => {
+      console.log('pos', pos);
+      setCurrentDeviceLocation({
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+      })
+    })
+
     const tapped_lat = lat;
     const tapped_lon = lon;
 
@@ -331,25 +343,14 @@ const App = () => {
     console.log(`map tapped ${tapped_lat}, ${tapped_lon} radius: ${radius}`);
 
     // search cycleParking and collect the ids
-    cycleParking
-      .getCycleParksInRange(tapped_lat, tapped_lon, radius)
-      // .then(putCycleParkMarkersOnMap)
+    cycleParking.getCycleParksInRange(tapped_lat, tapped_lon, radius)
       .then((cycleParkObjects)=>{
         const ids = cycleParkObjects.reduce((prev, current)=>{
           prev.push(current.getId())
           return prev
         }, [])
         setSearchedCycleParkIds( ids )
-
-        // putCycleParkMarkersOnMap(cycleParkObjects)
-      })
-      .catch(console.log);
-
-    // put bookmarked markers on
-    // cycleParking
-    //   .getCycleParksById(bookmarkedCycleParkIds)
-    //   .then(putBookmarkMarkersOnMap)
-    //   .catch(console.log);
+      }).catch(console.log);
 
     // centre camera here
     setCameraOver(tapped_lat, tapped_lon, 500);
@@ -590,6 +591,7 @@ const App = () => {
         {/* side list view */}
         {listViewVisible && (
           <ListView
+            currentDeviceLocation={currentDeviceLocation}
             searchedMarkers={searchedMarkers}
             bookmarkedMarkers={bookmarkedMarkers}
             optionSelected={markerObject => {
