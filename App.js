@@ -14,6 +14,8 @@ import {
   Text,
   View,
   SafeAreaView,
+  PermissionsAndroid,
+  Pressable,
 } from 'react-native';
 
 import MapView from 'react-native-map-clustering';
@@ -32,6 +34,10 @@ import ListView from './Components/GavMaterial/ListView/ListView';
 import InformationBar from './Components/GavMaterial/InformationBar/InformationBar';
 import ImagePopup from './Components/GavMaterial/ImagePopup/ImagePopup';
 import FloatingButtons from './Components/GavMaterial/FloatingButtons/FloatingButtons';
+
+import Geolocation from 'react-native-geolocation-service';
+
+import themes from './Theme';
 
 const cycleParking = new CycleParking(true);
 cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
@@ -86,9 +92,47 @@ const latitudeDeltaToMetres = latitudeDelta => {
   return metres;
 };
 
+
+/**
+ * Attempt to get device permission. Prompt for permission on android too
+ * @returns 
+ */
+const getCurrentDeviceLocation = ()=>{
+  return new Promise((resolve,reject)=>{
+    // request permission if we don't already have it
+    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then((hasPermission)=>{
+      if(!hasPermission){
+        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
+      }
+      if(hasPermission || PermissionsAndroid.RESULTS.GRANTED){
+        const geoLocationOptions = {
+          timeout: 10000,
+          maximumAge: 10000,
+          enableHighAccuracy: true
+        }
+        Geolocation.getCurrentPosition((position)=>{
+          console.log('internal position', position)
+          resolve(position)
+        },(error)=>{
+          console.log('internal position', error)
+          reject(error)
+        },geoLocationOptions)
+      }else{
+        reject({error:true,message:'user did not grant location permissions'})
+      }
+    })
+  });
+}
+
+
 const App = () => {
   // reference to the map, use this to call map methods
   const mapRef = useRef(null);
+
+  // const [deviceLocation, setDeviceLocation] = useState({
+  //   enabled: true,
+  //   lat: 
+  // })
 
   // all markers
   const [searchedCycleParkIds, setSearchedCycleParkIds] = useState([]);
@@ -147,7 +191,7 @@ const App = () => {
       // (not including those that exists in new bookmarks list)
       const oldSearchResultIds = searchedMarkers.reduce((prev, current)=>{
         const thisSearchResultId = current.cyclepark.getId()
-        // omit search results in the new bookmars
+        // omit search results in the new bookmars1
         if(!newBookmarkIds.includes( thisSearchResultId )){
           prev.push(thisSearchResultId)
         }
@@ -238,6 +282,9 @@ const App = () => {
 
   const searchMap = async (lat, lon) => {
     console.log('searchMap(lat, lon)', lat, lon);
+
+    //TODO temp test stuff
+    getCurrentDeviceLocation()
 
     setFloatingTextVisible(false);
 
@@ -427,6 +474,30 @@ const App = () => {
           {/* Draw the circle if it's visible */}
           {circleProps.visible && <Circle {...circleProps} />}
         </MapView>
+
+
+          {/* TEMP TEST BUTTON */}
+          <Pressable onPress={()=>{
+            console.log('=== test button ===')
+
+            getCurrentDeviceLocation().then((position)=>{
+              console.log('got position', position)
+              setCameraOver(position.coords.latitude, position.coords.longitude, 500)
+            })
+
+          }} style={{
+            position:'absolute',
+            top:'50%',
+            left:0,
+            backgroundColor: 'green',
+            ...themes.debugHighlight
+          }}>
+            <Text style={{
+              color:'white',
+              fontSize: 20
+            }}>TEST</Text>
+          </Pressable>
+
 
         {/* bar along the top with the space info */}
         {selectedMarker && (
