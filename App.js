@@ -9,29 +9,23 @@
 import React from 'react';
 import {useState, useRef, useEffect} from 'react';
 import {
-  Image,
   Dimensions,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   SafeAreaView,
-  Pressable,
 } from 'react-native';
 
 import MapView from 'react-native-map-clustering';
 import {Callout, Circle, Marker} from 'react-native-maps';
 
 import {CycleParking} from './cycleparking-tools/CycleParking';
-import InfoPane from './Components/InfoPane/InfoPane.js';
-import CycleParkingInformationPage from './CycleParkingInformationPage';
 
 import cycleparkingJson from './cycleparking-tools/cycleparking.json';
 import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json';
 import userSettings from './UserSettings';
 import SettingsPage from './Components/GavMaterial/SettingsPage/SettingsPage';
 
-import themes from './Theme';
 import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
 
 import ListView from './Components/GavMaterial/ListView/ListView';
@@ -44,7 +38,6 @@ cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
 
 // unchanging settings
 const WIN_WIDTH = Dimensions.get('window').width;
-const WIN_HEIGHT = Dimensions.get('window').height;
 const BARNES_ROUNDABOUT_LATLON = [51.470624, -0.255804];
 const MAX_CIRCLE_RADIUS_METRES = 1000;
 
@@ -96,48 +89,78 @@ const latitudeDeltaToMetres = latitudeDelta => {
 const App = () => {
   // reference to the map, use this to call map methods
   const mapRef = useRef(null);
-  const tappedMarkerRef = useRef(null);
 
   // all markers
+  const [searchedCycleParkIds, setSearchedCycleParkIds] = useState([]);
   const [searchedMarkers, setSearchedMarkers] = useState([]);
-  const [bookmarkedMarkers, setBookmarkedMarkers] = useState([]);
   const [bookmarkedCycleParkIds, setBookmarkedCycleParkIds] = useState([]);
+  const [bookmarkedMarkers, setBookmarkedMarkers] = useState([]);
 
+  // the floating text on initial load
+  const [floatingTextVisible, setFloatingTextVisible] = useState(true);
+  
+  // the cycle parking image view
   const [imageOverlay, setImageOverlay] = useState({
     visible: false,
     sources: [],
   });
-
-  // the floating text on initial load
-  const [floatingTextVisible, setFloatingTextVisible] = useState(true);
 
   // load bookmarks only once
   useEffect(() => {
     updateDrawableBookmarks();
   }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
 
-  // re-read bookmarks and update the current bookmarked set
-  // remove bookmarked ones from the searched set
-  // re-read the cycleParking into and putBookmarkMarkersOnMap
-  const updateDrawableBookmarks = () => {
-    console.log('updateDrawableBookmarks');
-    userSettings.get('bookmarks').then(cycleParkIds => {
-      setBookmarkedCycleParkIds(cycleParkIds);
+  // when searchedCycleParkIds is updated, re-render the pins
+  useEffect(()=>{
+    console.log('useEffect for searchedCycleParkIds')
+    cycleParking
+        .getCycleParksById(searchedCycleParkIds)
+        .then(putCycleParkMarkersOnMap)
+        .catch(console.log);
+  }, [searchedCycleParkIds])
 
-      const temp_searchedMarkers = [...searchedMarkers];
-      for (let i = temp_searchedMarkers.length - 1; i >= 0; i--) {
-        if (
-          cycleParkIds.indexOf(temp_searchedMarkers[i].cyclepark.getId()) !== -1
-        ) {
-          temp_searchedMarkers.splice(i, 1);
-        }
-      }
-      setSearchedMarkers(temp_searchedMarkers);
-
-      cycleParking
-        .getCycleParksById(cycleParkIds)
+  // when bookmarkedCycleParkIds is updated, re-render the pins
+  useEffect(()=>{
+    console.log('useEffect for bookmarkedCycleParkIds')
+    cycleParking
+        .getCycleParksById(bookmarkedCycleParkIds)
         .then(putBookmarkMarkersOnMap)
         .catch(console.log);
+  }, [bookmarkedCycleParkIds])
+
+  // if a component in the tree has changed the bookmarks, this function should
+  // be called
+  const updateDrawableBookmarks = () => {
+    console.log(' ===== updateDrawableBookmarks ===== ');
+    userSettings.get('bookmarks').then(cycleParkIds => {
+
+      // set of bookmarks before the remote update
+      const oldBookmarkIds = bookmarkedCycleParkIds
+
+      // the new set of bookmarks
+      const newBookmarkIds = cycleParkIds
+
+      // which of the old ones are no longer present in the new ones?
+      const removedBookmarkIds = oldBookmarkIds.filter(x => !newBookmarkIds.includes(x));
+      
+      // get the IDs of the search results currently on screen
+      // (not including those that exists in new bookmarks list)
+      const oldSearchResultIds = searchedMarkers.reduce((prev, current)=>{
+        const thisSearchResultId = current.cyclepark.getId()
+        // omit search results in the new bookmars
+        if(!newBookmarkIds.includes( thisSearchResultId )){
+          prev.push(thisSearchResultId)
+        }
+        return prev
+      },[])
+
+      // set the new bookmarked ids, useEffect will rerender
+      setBookmarkedCycleParkIds( newBookmarkIds )
+
+      // set the new search result ids (the old ones plus any removed bookmars)
+      // useEffect will rerender
+      setSearchedCycleParkIds( [...oldSearchResultIds, ...removedBookmarkIds] )
+      
     });
   };
 
@@ -226,17 +249,26 @@ const App = () => {
 
     console.log(`map tapped ${tapped_lat}, ${tapped_lon} radius: ${radius}`);
 
-    // get cycle parking and add it to the map
+    // search cycleParking and collect the ids
     cycleParking
       .getCycleParksInRange(tapped_lat, tapped_lon, radius)
-      .then(putCycleParkMarkersOnMap)
+      // .then(putCycleParkMarkersOnMap)
+      .then((cycleParkObjects)=>{
+        const ids = cycleParkObjects.reduce((prev, current)=>{
+          prev.push(current.getId())
+          return prev
+        }, [])
+        setSearchedCycleParkIds( ids )
+
+        // putCycleParkMarkersOnMap(cycleParkObjects)
+      })
       .catch(console.log);
 
     // put bookmarked markers on
-    cycleParking
-      .getCycleParksById(bookmarkedCycleParkIds)
-      .then(putBookmarkMarkersOnMap)
-      .catch(console.log);
+    // cycleParking
+    //   .getCycleParksById(bookmarkedCycleParkIds)
+    //   .then(putBookmarkMarkersOnMap)
+    //   .catch(console.log);
 
     // centre camera here
     setCameraOver(tapped_lat, tapped_lon, 500);
@@ -282,7 +314,10 @@ const App = () => {
     const new_markers = [];
     cycleparks.forEach(cyclepark => {
       // skip any that exist in the bookmarks
-      if (bookmarkedCycleParkIds.includes(cyclepark.getId())) return;
+      if (bookmarkedCycleParkIds.includes(cyclepark.getId())){
+        console.log(`Skipping ${cyclepark.getId()} as it exists in bookmarkedCycleParkIds`);
+        return;
+      } 
       new_markers.push(formatMarkerFromCyclePark(cyclepark));
     });
     setSearchedMarkers(new_markers);
@@ -413,7 +448,10 @@ const App = () => {
           <FloatingButtons
             selectedMarker={selectedMarker}
             isCurrentBookmark={bookmarkedCycleParkIds.indexOf( selectedMarker.cyclepark.getId() ) !== -1}
-            onBookmarksChanged={updateDrawableBookmarks}
+            onBookmarksChanged={()=>{
+              updateDrawableBookmarks()
+              setListViewVisible(false)
+            }}
           />
         )}
 
@@ -447,12 +485,12 @@ const App = () => {
             bookmarkedMarkers={bookmarkedMarkers}
             optionSelected={markerObject => {
               // move camera here
-              const lat = markerObject.coordinate.latitude;
-              const lon = markerObject.coordinate.longitude;
-              setCameraOver(lat, lon, 500, 19);
-              setSelectedMarker(markerObject);
-              setFloatingTextVisible(false);
-              setListViewVisible(false);
+              const lat = markerObject.coordinate.latitude
+              const lon = markerObject.coordinate.longitude
+              setCameraOver(lat, lon, 500, 19)
+              setSelectedMarker(markerObject)
+              setFloatingTextVisible(false)
+              setListViewVisible(false)
             }}
           />
         )}
