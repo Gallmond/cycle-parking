@@ -44,7 +44,6 @@ cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
 
 // unchanging settings
 const WIN_WIDTH = Dimensions.get('window').width;
-const BARNES_ROUNDABOUT_LATLON = [51.470624, -0.255804];
 const MAX_CIRCLE_RADIUS_METRES = 1000;
 
 // https://mapstyle.withgoogle.com/
@@ -92,6 +91,20 @@ const latitudeDeltaToMetres = latitudeDelta => {
   return metres;
 };
 
+/**
+ * resolves with true if permission granted, false otherwise
+ * @returns 
+ */
+const requestDeviceLocationPermission = ()=>{
+  return new Promise((resolve,reject)=>{
+    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then((hasPermission)=>{
+      if(hasPermission) resolve(hasPermission)
+      PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(status => {
+        resolve(status === PermissionsAndroid.RESULTS.GRANTED)
+      })
+    }).catch(reject)
+  });
+}
 
 /**
  * Attempt to get device permission. Prompt for permission on android too
@@ -99,22 +112,16 @@ const latitudeDeltaToMetres = latitudeDelta => {
  */
 const getCurrentDeviceLocation = ()=>{
   return new Promise((resolve,reject)=>{
-    // request permission if we don't already have it
-    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then((hasPermission)=>{
-      if(!hasPermission){
-        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
-      }
-      if(hasPermission || PermissionsAndroid.RESULTS.GRANTED){
+    requestDeviceLocationPermission().then(granted => {
+      if(granted){
         const geoLocationOptions = {
           timeout: 10000,
           maximumAge: 10000,
           enableHighAccuracy: true
         }
         Geolocation.getCurrentPosition((position)=>{
-          console.log('internal position', position)
           resolve(position)
         },(error)=>{
-          console.log('internal position', error)
           reject(error)
         },geoLocationOptions)
       }else{
@@ -129,10 +136,40 @@ const App = () => {
   // reference to the map, use this to call map methods
   const mapRef = useRef(null);
 
-  // const [deviceLocation, setDeviceLocation] = useState({
-  //   enabled: true,
-  //   lat: 
-  // })
+  /**
+   * Keep track of user intention separate from device permission. If user has
+   * said no, don't keep asking. Ask once here at the start
+   */
+  const [canAccessDeviceLocation, setCanAccessDeviceLocation] = useState(null)
+  const [defaultLocation, setDefaultLocation] = useState({
+    // london bridge
+    lat: 51.5079,
+    lon: -0.0877,
+  })
+  // set first time
+  useEffect(()=>{
+    console.log('userEffect for canAccessDeviceLocation')
+    userSettings.get('canAccessDeviceLocation').then(val => {
+      console.log('canAccessDeviceLocation from settings:', val)
+      setCanAccessDeviceLocation(val)
+      // if we don't have it from settings, request it one more time
+      if( val !== true ){
+        requestDeviceLocationPermission().then( canAccess => {
+          setCanAccessDeviceLocation( canAccess )
+          userSettings.set('canAccessDeviceLocation', canAccess)
+        })
+      }else{
+        getCurrentDeviceLocation().then(position => {
+          setDefaultLocation({lat: position.coords.latitude, lon: position.coords.longitude})
+        })
+      }
+    })
+  },[])
+
+  // set map if default location changes
+  useEffect(()=>{
+    setCameraOver(defaultLocation.lat, defaultLocation.lon, 500)
+  }, [defaultLocation])
 
   // all markers
   const [searchedCycleParkIds, setSearchedCycleParkIds] = useState([]);
@@ -226,8 +263,8 @@ const App = () => {
   // camera
   const [mapCamera, setMapCamera] = useState({
     center: {
-      latitude: BARNES_ROUNDABOUT_LATLON[0],
-      longitude: BARNES_ROUNDABOUT_LATLON[1],
+      latitude: defaultLocation.lat,
+      longitude: defaultLocation.lon,
     },
     pitch: 0,
     heading: 0,
@@ -239,8 +276,8 @@ const App = () => {
   const [circleProps, setCircleProps] = useState({
     visible: false,
     center: {
-      latitude: BARNES_ROUNDABOUT_LATLON[0],
-      longitude: BARNES_ROUNDABOUT_LATLON[1],
+      latitude: defaultLocation.lat,
+      longitude: defaultLocation.lon,
     },
     radius: 100,
   });
@@ -282,9 +319,6 @@ const App = () => {
 
   const searchMap = async (lat, lon) => {
     console.log('searchMap(lat, lon)', lat, lon);
-
-    //TODO temp test stuff
-    getCurrentDeviceLocation()
 
     setFloatingTextVisible(false);
 
@@ -440,6 +474,8 @@ const App = () => {
     setListViewVisible(false);
   };
 
+  
+
   return (
     <SafeAreaView style={styles.container}>
       {/* MAP CONTAINER START */}
@@ -483,6 +519,8 @@ const App = () => {
             getCurrentDeviceLocation().then((position)=>{
               console.log('got position', position)
               setCameraOver(position.coords.latitude, position.coords.longitude, 500)
+            }).catch(err => {
+              console.log('getCurrentDeviceLocation rejected', err)
             })
 
           }} style={{
