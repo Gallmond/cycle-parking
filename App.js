@@ -325,13 +325,15 @@ const App = () => {
 
     setFloatingTextVisible(false);
 
-    // update user pos
+    // update stored device position (it is used for distance measuring)
     getCurrentDeviceLocation().then(pos => {
-      console.log('pos', pos);
-      setCurrentDeviceLocation({
-        lat: pos.coords.latitude,
-        lon: pos.coords.longitude,
-      })
+      if(pos){
+        console.log('pos', pos);
+        setCurrentDeviceLocation({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        })
+      }
     })
 
     const tapped_lat = lat;

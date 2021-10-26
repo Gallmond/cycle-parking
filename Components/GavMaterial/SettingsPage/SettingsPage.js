@@ -5,7 +5,8 @@ import {
   Text,
   Button,
   Switch,
-  Alert
+  Alert,
+  PermissionsAndroid
 } from 'react-native';
 import themes from "../../../Theme";
 import userSettings from "../../../UserSettings";
@@ -43,6 +44,25 @@ class SettingsPage extends Component{
     typeof this.props.onBookmarksChanged === 'function'
       ? this.props.onBookmarksChanged()
       : null
+  }
+
+  async locationPermissionButtonPressed(){
+    console.log('SettingsPage.locationPermissionButtonPressed()')
+    PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(status => {
+      console.log('PermissionsAndroid.RESULTS.GRANTED', status,  PermissionsAndroid.RESULTS.GRANTED);
+      userSettings.set('canAccessDeviceLocation', status === PermissionsAndroid.RESULTS.GRANTED)
+
+      if(status === PermissionsAndroid.RESULTS.GRANTED){
+
+        Alert.alert(
+          'You have already given permission to access device location',
+          `If you want to remove this, please do so in your device permission settings`,
+          [{text: 'Ok'}],
+        );
+
+      }
+
+    })
   }
 
   async clearBookmarksButtonPressed(){
@@ -181,6 +201,40 @@ class SettingsPage extends Component{
             </View>
           )}
           
+        </View>
+
+        {/* re-request location permission */}
+        <View
+          style={{
+            width: '100%',
+            height: 100,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+          }}>
+          <Text
+            style={{
+              color: themes.main.text.onSecondary,
+              fontSize: 17,
+              fontWeight: 'bold',
+              textAlignVertical: 'center',
+            }}>
+            Location permission
+          </Text>
+          <View
+            style={{
+              width: 150,
+            }}>
+            <Button
+              onPress={()=>{
+                this.locationPermissionButtonPressed()
+              }}
+              title="Prompt"
+              color={themes.main.primary}
+              accessibilityLabel="Grant location permissions"
+            />
+          </View>
         </View>
 
 
