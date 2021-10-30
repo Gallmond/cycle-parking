@@ -84,6 +84,9 @@ class SettingsPage extends Component {
         text: 'Update',
         onPress: () => {
           console.log('UPDATE DATA HERE');
+          AsyncStorage.getAllKeys().then(keys =>{
+            console.log('keys', keys);
+          })
         },
       },
       {
