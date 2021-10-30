@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { file } from '@babel/types';
 import React, {Component} from 'react';
 import {
   View,
@@ -9,6 +9,7 @@ import {
   Alert,
   PermissionsAndroid,
 } from 'react-native';
+import FileHelper from '../../../GavClasses/FileHelper';
 import themes from '../../../Theme';
 import userSettings from '../../../UserSettings';
 
@@ -71,6 +72,74 @@ class SettingsPage extends Component {
     });
   }
 
+  async testFileWrite(){
+
+    console.log('===== testFileWrite =====')
+
+    const now = new Date().toUTCString()
+
+    const testFileContent = `the time is ${now} so cool!`
+    const testFileName = 'testFileNameTwo.txt'
+    const testDirectory = '/testdir'
+    const testFilePath = `${testDirectory}/${testFileName}`
+
+    const fileHelper = new FileHelper()
+
+    // does the dir exists?
+    console.log(`does ${testDirectory} exist?`)
+    const dirExists = await fileHelper.exists( testDirectory )
+    console.log(`dir ${testDirectory} ${dirExists ? 'does' : 'does not'} exist`)
+
+    if(!dirExists){
+      console.log('creating dir')
+      const dirCreated = await fileHelper.mkDir( testDirectory )
+      dirCreated
+        ? console.log('created dir')
+        : console.log('maybe created dir')
+    }
+
+    // write the file
+    console.log('attempt to create file')
+    const created = await fileHelper.writeFile( testFilePath, testFileContent )
+    created
+      ? console.log('created file')
+      : console.log('maybe created file')
+
+    // attempt to read the file
+    console.log('attempt to read file')
+    const fileContent = await fileHelper.readFile( testFilePath )
+    fileContent
+      ? console.log('fileContent', fileContent)
+      : console.log('no file content found!')
+
+    const tempPrintItems = async ( items, indentLevel = 0 )=>{
+      items.forEach(async (item) =>{
+        let type = ''
+        item.isDirectory() && (type += 'd')
+        item.isFile() && (type += 'f')
+
+        let indents = Array(indentLevel)
+        indents.fill('\t')
+
+        let name = item.name
+        console.log(`${indents.join('')}${type}: ${name}`)
+
+        if(type === 'd'){
+          indentLevel++
+          let innerItems = await fileHelper.readDir( `/${name}` )
+          tempPrintItems(innerItems, indentLevel )
+        }
+
+      })
+    }
+
+    // list all items
+    const allItems = await fileHelper.readDir()
+    tempPrintItems(allItems)
+
+  }
+
+
   updateTFLDataButtonPressed() {
     console.log('SettingsPage.updateTFLDataButtonPressed()');
 
@@ -84,9 +153,7 @@ class SettingsPage extends Component {
         text: 'Update',
         onPress: () => {
           console.log('UPDATE DATA HERE');
-          AsyncStorage.getAllKeys().then(keys =>{
-            console.log('keys', keys);
-          })
+          this.testFileWrite()
         },
       },
       {
