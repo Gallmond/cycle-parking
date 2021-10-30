@@ -1,17 +1,16 @@
-const { file } = require('@babel/types');
 const { stat } = require('react-native-fs');
 
-// https://github.com/itinance/react-native-fs#Examples
-
-
-
+/**
+ * Just a wrapper for react-native-fs really
+ * Uses DocumentDirectoryPath as default 'root' path
+ */
 class FileHelper{
   constructor(){
+  // https://github.com/itinance/react-native-fs#Examples
     this.RNFS = require('react-native-fs');
 
     // /data/user/0/com.awesomeproject2/files
     this.deviceFolder = this.RNFS.DocumentDirectoryPath
-
   }
 
   /**
@@ -81,16 +80,24 @@ class FileHelper{
   /**
    * write content to a given file path.
    * Note that path to file MUST exist
+   * Note: Documentation implies resolves with bool but that doesn't seem to be
+   *  the case
    * 
-   * @param {*} filePath 
-   * @param {*} content 
-   * @param {*} encoding 
-   * @returns 
+   * @param {String} filePath filePath
+   * @param {String} content file data
+   * @param {String} encoding file data encoding (default UTF8)
+   * @returns {Promise}
    */
   async writeFile( filePath, content, encoding='utf8'){
     return await this.RNFS.writeFile( this.deviceFolder + filePath, content, encoding )
   }
 
+  /**
+   * Sanity checks file path
+   * 
+   * @param {string} filePath filePath
+   * @returns {bool}
+   */
   filePathValid( filePath ){
     return (
       // must be a string

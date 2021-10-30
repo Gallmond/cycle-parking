@@ -1,4 +1,3 @@
-import { file } from '@babel/types';
 import React, {Component} from 'react';
 import {
   View,
@@ -12,7 +11,6 @@ import {
 import FileHelper from '../../../GavClasses/FileHelper';
 import themes from '../../../Theme';
 import userSettings from '../../../UserSettings';
-
 
 /**
  * props
