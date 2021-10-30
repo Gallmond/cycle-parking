@@ -13,6 +13,8 @@ target 'AwesomeProject2' do
   )
 
 
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
   target 'AwesomeProject2Tests' do
     inherit! :complete
     # Pods for testing
