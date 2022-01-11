@@ -16,7 +16,6 @@ const image_bookmark = require('./../../../images/icons/bookmark.png')
 class FloatingButtons extends Component {
   constructor(props) {
     super(props);
-    console.log('this.props.isCurrentBookmark', this.props.isCurrentBookmark);
   }
 
   openGoogleMapsWithDirections(){
