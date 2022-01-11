@@ -8,6 +8,7 @@ import {
   Alert,
   PermissionsAndroid,
 } from 'react-native';
+import ExportHelper from '../../../GavClasses/ExportHelper';
 import FileHelper from '../../../GavClasses/FileHelper';
 import themes from '../../../Theme';
 import userSettings from '../../../UserSettings';
@@ -68,6 +69,24 @@ class SettingsPage extends Component {
         );
       }
     });
+  }
+
+
+  async testRequest(){
+    console.log('===== testRequest =====')
+    const exportHelper = new ExportHelper()
+    
+    // check what stored raw exports we have
+    const storedExports = await exportHelper.getStoredExports()
+    console.log('storeExports', storedExports);
+    if(storedExports.length === 0){
+      exportHelper.downloadCycleParkExportToday()
+    }
+
+
+    
+
+
   }
 
   async testFileWrite(){
@@ -151,7 +170,8 @@ class SettingsPage extends Component {
         text: 'Update',
         onPress: () => {
           console.log('UPDATE DATA HERE');
-          this.testFileWrite()
+          // this.testFileWrite()
+          this.testRequest()
         },
       },
       {
