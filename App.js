@@ -14,8 +14,6 @@ import {
   Text,
   View,
   SafeAreaView,
-  Pressable,
-  Image,
 } from 'react-native';
 
 // react native map parts
@@ -37,12 +35,13 @@ import ListView from './Components/GavMaterial/ListView/ListView';
 import InformationBar from './Components/GavMaterial/InformationBar/InformationBar';
 import ImagePopup from './Components/GavMaterial/ImagePopup/ImagePopup';
 import FloatingButtons from './Components/GavMaterial/FloatingButtons/FloatingButtons';
+import FocusOnMeButton from './Components/GavMaterial/Misc/FocusOnMeButton';
 
 // device functions
-import { getCurrentDeviceLocation } from './Utils/DeviceFunctions';
+import {getCurrentDeviceLocation} from './Utils/DeviceFunctions';
 
 // maths
-import { latitudeDeltaToMetres } from './Utils/Maths';
+import {latitudeDeltaToMetres} from './Utils/Maths';
 
 // init cycle parking data
 const cycleParking = new CycleParking(true);
@@ -98,38 +97,38 @@ const App = () => {
    * Keep track of user intention separate from device permission. If user has
    * said no, don't keep asking. Ask once here at the start
    */
-  const [currentDeviceLocation, setCurrentDeviceLocation] = useState(null)
+  const [currentDeviceLocation, setCurrentDeviceLocation] = useState(null);
   const [defaultLocation, setDefaultLocation] = useState({
     // london bridge
     lat: 51.5079,
     lon: -0.0877,
-  })
-  
+  });
+
   // set first time
-  useEffect(()=>{
+  useEffect(() => {
     userSettings.get('canAccessDeviceLocation').then(val => {
       // if we don't have it from settings, request it one more time
-      if( val !== true ){
-        requestDeviceLocationPermission().then( canAccess => {
-          userSettings.set('canAccessDeviceLocation', canAccess)
-        })
-      }else{
+      if (val !== true) {
+        requestDeviceLocationPermission().then(canAccess => {
+          userSettings.set('canAccessDeviceLocation', canAccess);
+        });
+      } else {
         getCurrentDeviceLocation().then(position => {
           const thisPosition = {
             lat: position.coords.latitude,
             lon: position.coords.longitude,
           };
-          setCurrentDeviceLocation(thisPosition)
-          setDefaultLocation(thisPosition)
-        })
+          setCurrentDeviceLocation(thisPosition);
+          setDefaultLocation(thisPosition);
+        });
       }
-    })
-  },[])
+    });
+  }, []);
 
   // set map if default location changes
-  useEffect(()=>{
-    setCameraOver(defaultLocation.lat, defaultLocation.lon, 500)
-  }, [defaultLocation])
+  useEffect(() => {
+    setCameraOver(defaultLocation.lat, defaultLocation.lon, 500);
+  }, [defaultLocation]);
 
   // all markers
   const [searchedCycleParkIds, setSearchedCycleParkIds] = useState([]);
@@ -139,7 +138,7 @@ const App = () => {
 
   // the floating text on initial load
   const [floatingTextVisible, setFloatingTextVisible] = useState(true);
-  
+
   // the cycle parking image view
   const [imageOverlay, setImageOverlay] = useState({
     visible: false,
@@ -152,52 +151,52 @@ const App = () => {
   }, []); // the array indicates when this should re-run (ie, no states changing so don't re-run)
 
   // when searchedCycleParkIds is updated, re-render the pins
-  useEffect(()=>{
+  useEffect(() => {
     cycleParking
-        .getCycleParksById(searchedCycleParkIds)
-        .then(putCycleParkMarkersOnMap)
-        .catch(console.error);
-  }, [searchedCycleParkIds])
+      .getCycleParksById(searchedCycleParkIds)
+      .then(putCycleParkMarkersOnMap)
+      .catch(console.error);
+  }, [searchedCycleParkIds]);
 
   // when bookmarkedCycleParkIds is updated, re-render the pins
-  useEffect(()=>{
+  useEffect(() => {
     cycleParking
-        .getCycleParksById(bookmarkedCycleParkIds)
-        .then(putBookmarkMarkersOnMap)
-        .catch(console.error);
-  }, [bookmarkedCycleParkIds])
+      .getCycleParksById(bookmarkedCycleParkIds)
+      .then(putBookmarkMarkersOnMap)
+      .catch(console.error);
+  }, [bookmarkedCycleParkIds]);
 
   // if a component in the tree has changed the bookmarks, this function should be called
   const updateDrawableBookmarks = () => {
     userSettings.get('bookmarks').then(cycleParkIds => {
-
       // set of bookmarks before the remote update
-      const oldBookmarkIds = bookmarkedCycleParkIds
+      const oldBookmarkIds = bookmarkedCycleParkIds;
 
       // the new set of bookmarks
-      const newBookmarkIds = cycleParkIds
+      const newBookmarkIds = cycleParkIds;
 
       // which of the old ones are no longer present in the new ones?
-      const removedBookmarkIds = oldBookmarkIds.filter(x => !newBookmarkIds.includes(x));
-      
+      const removedBookmarkIds = oldBookmarkIds.filter(
+        x => !newBookmarkIds.includes(x),
+      );
+
       // get the IDs of the search results currently on screen
       // (not including those that exists in new bookmarks list)
-      const oldSearchResultIds = searchedMarkers.reduce((prev, current)=>{
-        const thisSearchResultId = current.cyclepark.getId()
+      const oldSearchResultIds = searchedMarkers.reduce((prev, current) => {
+        const thisSearchResultId = current.cyclepark.getId();
         // omit search results in the new bookmars1
-        if(!newBookmarkIds.includes( thisSearchResultId )){
-          prev.push(thisSearchResultId)
+        if (!newBookmarkIds.includes(thisSearchResultId)) {
+          prev.push(thisSearchResultId);
         }
-        return prev
-      },[])
+        return prev;
+      }, []);
 
       // set the new bookmarked ids, useEffect will rerender
-      setBookmarkedCycleParkIds( newBookmarkIds )
+      setBookmarkedCycleParkIds(newBookmarkIds);
 
       // set the new search result ids (the old ones plus any removed bookmars)
       // useEffect will rerender
-      setSearchedCycleParkIds( [...oldSearchResultIds, ...removedBookmarkIds] )
-      
+      setSearchedCycleParkIds([...oldSearchResultIds, ...removedBookmarkIds]);
     });
   };
 
@@ -278,13 +277,13 @@ const App = () => {
 
     // update stored device position (it is used for distance measuring)
     getCurrentDeviceLocation().then(pos => {
-      if(pos){
+      if (pos) {
         setCurrentDeviceLocation({
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
-        })
+        });
       }
-    })
+    });
 
     const tapped_lat = lat;
     const tapped_lon = lon;
@@ -293,14 +292,16 @@ const App = () => {
     const radius = drawCircleToFitWidth(tapped_lat, tapped_lon);
 
     // search cycleParking and collect the ids
-    cycleParking.getCycleParksInRange(tapped_lat, tapped_lon, radius)
-      .then((cycleParkObjects)=>{
-        const ids = cycleParkObjects.reduce((prev, current)=>{
-          prev.push(current.getId())
-          return prev
-        }, [])
-        setSearchedCycleParkIds( ids )
-      }).catch(console.error);
+    cycleParking
+      .getCycleParksInRange(tapped_lat, tapped_lon, radius)
+      .then(cycleParkObjects => {
+        const ids = cycleParkObjects.reduce((prev, current) => {
+          prev.push(current.getId());
+          return prev;
+        }, []);
+        setSearchedCycleParkIds(ids);
+      })
+      .catch(console.error);
 
     // centre camera here
     setCameraOver(tapped_lat, tapped_lon, 500);
@@ -342,10 +343,9 @@ const App = () => {
     const new_markers = [];
     cycleparks.forEach(cyclepark => {
       // only add ones not already in bookmarks
-      if(!bookmarkedCycleParkIds.includes(cyclepark.getId())){
+      if (!bookmarkedCycleParkIds.includes(cyclepark.getId())) {
         new_markers.push(formatMarkerFromCyclePark(cyclepark));
       }
-     
     });
     setSearchedMarkers(new_markers);
   };
@@ -408,8 +408,6 @@ const App = () => {
     setListViewVisible(false);
   };
 
-  
-
   return (
     <SafeAreaView style={styles.container}>
       {/* MAP CONTAINER START */}
@@ -436,8 +434,8 @@ const App = () => {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}>
+
           {/* Draw the markers, or cluster marker */}
-          {/* {getAllMarkers().map( marker => renderMarker( marker ) )} */}
           {searchedMarkers.map(marker => renderMarker(marker))}
           {bookmarkedMarkers.map(marker => renderMarker(marker, true))}
 
@@ -446,38 +444,21 @@ const App = () => {
         </MapView>
 
         {/* focus on me button */}
-        <Pressable
-          onPress={() => {
+        <FocusOnMeButton
+          onPress={()=>{
             getCurrentDeviceLocation()
               .then(position => {
                 const thisPosition = {
                   lat: position.coords.latitude,
                   lon: position.coords.longitude,
                 };
-                setCurrentDeviceLocation(thisPosition)
-                setCameraOver(thisPosition.lat, thisPosition.lon,500,);
+                setCurrentDeviceLocation(thisPosition);
+                setCameraOver(thisPosition.lat, thisPosition.lon, 500);
               })
               .catch(console.error);
           }}
-          style={{
-            height: '10%',
-            aspectRatio: 1,
-            position: 'absolute',
-            top: '50%',
-            left: 0,
-            padding: 5,
-            // ...themes.debugHighlight
-          }}>
-            <Image
-            style={{
-              width: undefined,
-              height: undefined,
-              flex: 1,
-              opacity: 0.5
-            }}
-            source={require('./images/icons/target.png')}
-            />
-        </Pressable>
+        />
+        
 
         {/* bar along the top with the space info */}
         {selectedMarker && (
@@ -497,11 +478,7 @@ const App = () => {
         {selectedMarker && (
           <FloatingButtons
             selectedMarker={selectedMarker}
-            isCurrentBookmark={
-              bookmarkedCycleParkIds.indexOf(
-                selectedMarker.cyclepark.getId(),
-              ) !== -1
-            }
+            isCurrentBookmark={bookmarkedCycleParkIds.indexOf(selectedMarker.cyclepark.getId()) !== -1}
             onBookmarksChanged={() => {
               updateDrawableBookmarks();
               setListViewVisible(false);
