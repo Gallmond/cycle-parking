@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Switch, Text, StyleSheet, SafeAreaView, FlatList, View, Button } from "react-native"
+import { Switch, Text, StyleSheet, SafeAreaView, FlatList, View } from "react-native"
 import themes from "../../../Theme"
 import ListItem from "./ListItem"
 
@@ -109,7 +109,6 @@ class ListView extends Component{
 
   render(){
     return(
-      //TODO continue replacing the list view part
       <SafeAreaView style={this.style.outer}>
 
         {/* top text bit */}
@@ -127,8 +126,6 @@ class ListView extends Component{
             fontSize: 20,
             fontWeight: 'bold'
           }}>List view</Text>
-
-          {/* <Button title="Bookmarks" disabled={true} /> */}
 
           <View style={{
             flexDirection: 'row',

@@ -14,32 +14,37 @@ import {
   Text,
   View,
   SafeAreaView,
-  PermissionsAndroid,
   Pressable,
   Image,
 } from 'react-native';
 
+// react native map parts
 import MapView from 'react-native-map-clustering';
 import {Callout, Circle, Marker} from 'react-native-maps';
 
+// interact with cycle parking data
 import {CycleParking} from './cycleparking-tools/CycleParking';
-
 import cycleparkingJson from './cycleparking-tools/cycleparking.json';
 import cycleparkingEnumJson from './cycleparking-tools/cycleparking_enums.json';
+
+// user settings helper
 import userSettings from './UserSettings';
+
+// components
 import SettingsPage from './Components/GavMaterial/SettingsPage/SettingsPage';
-
 import BottomBar from './Components/GavMaterial/BottomBar/BottomBar';
-
 import ListView from './Components/GavMaterial/ListView/ListView';
 import InformationBar from './Components/GavMaterial/InformationBar/InformationBar';
 import ImagePopup from './Components/GavMaterial/ImagePopup/ImagePopup';
 import FloatingButtons from './Components/GavMaterial/FloatingButtons/FloatingButtons';
 
-import Geolocation from 'react-native-geolocation-service';
+// device functions
+import { getCurrentDeviceLocation } from './Utils/DeviceFunctions';
 
-import themes from './Theme';
+// maths
+import { latitudeDeltaToMetres } from './Utils/Maths';
 
+// init cycle parking data
 const cycleParking = new CycleParking(true);
 cycleParking.setData(cycleparkingJson).setEnums(cycleparkingEnumJson);
 
@@ -85,54 +90,6 @@ const GOOGLE_MAP_STYLE = [
   },
 ];
 
-// helper functions
-const latitudeDeltaToMetres = latitudeDelta => {
-  const miles = latitudeDelta * 69; // 1 degree is approx 69 miles
-  const metres = miles / 0.00062137; // 0.00001° = 1.11 m
-  return metres;
-};
-
-/**
- * resolves with true if permission granted, false otherwise
- * @returns 
- */
-const requestDeviceLocationPermission = ()=>{
-  return new Promise((resolve,reject)=>{
-    PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then((hasPermission)=>{
-      if(hasPermission) resolve(hasPermission)
-      PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION).then(status => {
-        resolve(status === PermissionsAndroid.RESULTS.GRANTED)
-      })
-    }).catch(reject)
-  });
-}
-
-/**
- * Attempt to get device permission. Prompt for permission on android too
- * @returns 
- */
-const getCurrentDeviceLocation = ()=>{
-  return new Promise((resolve,reject)=>{
-    requestDeviceLocationPermission().then(granted => {
-      if(granted){
-        const geoLocationOptions = {
-          timeout: 10000,
-          maximumAge: 10000,
-          enableHighAccuracy: true
-        }
-        Geolocation.getCurrentPosition((position)=>{
-          resolve(position)
-        },(error)=>{
-          reject(error)
-        },geoLocationOptions)
-      }else{
-        reject({error:true,message:'user did not grant location permissions'})
-      }
-    })
-  });
-}
-
-
 const App = () => {
   // reference to the map, use this to call map methods
   const mapRef = useRef(null);
@@ -147,11 +104,10 @@ const App = () => {
     lat: 51.5079,
     lon: -0.0877,
   })
+  
   // set first time
   useEffect(()=>{
-    console.log('userEffect for canAccessDeviceLocation')
     userSettings.get('canAccessDeviceLocation').then(val => {
-      console.log('canAccessDeviceLocation from settings:', val)
       // if we don't have it from settings, request it one more time
       if( val !== true ){
         requestDeviceLocationPermission().then( canAccess => {
@@ -197,7 +153,6 @@ const App = () => {
 
   // when searchedCycleParkIds is updated, re-render the pins
   useEffect(()=>{
-    console.log('useEffect for searchedCycleParkIds')
     cycleParking
         .getCycleParksById(searchedCycleParkIds)
         .then(putCycleParkMarkersOnMap)
@@ -206,17 +161,14 @@ const App = () => {
 
   // when bookmarkedCycleParkIds is updated, re-render the pins
   useEffect(()=>{
-    console.log('useEffect for bookmarkedCycleParkIds')
     cycleParking
         .getCycleParksById(bookmarkedCycleParkIds)
         .then(putBookmarkMarkersOnMap)
         .catch(console.log);
   }, [bookmarkedCycleParkIds])
 
-  // if a component in the tree has changed the bookmarks, this function should
-  // be called
+  // if a component in the tree has changed the bookmarks, this function should be called
   const updateDrawableBookmarks = () => {
-    console.log(' ===== updateDrawableBookmarks ===== ');
     userSettings.get('bookmarks').then(cycleParkIds => {
 
       // set of bookmarks before the remote update
@@ -288,13 +240,13 @@ const App = () => {
 
   // some formatting to return marker
   const renderMarker = (marker, highlight_pin = false) => {
-    const markerprops = {...marker, pinColor: highlight_pin ? 'blue' : 'red'};
+    const markerProps = {...marker, pinColor: highlight_pin ? 'blue' : 'red'};
     return (
       <Marker
         onPress={(comp, e) => {
           onMarkerPress(comp, marker);
         }}
-        {...markerprops}>
+        {...markerProps}>
         <Callout title={marker.title} description={marker.description} />
       </Marker>
     );
@@ -322,14 +274,11 @@ const App = () => {
   };
 
   const searchMap = async (lat, lon) => {
-    console.log('searchMap(lat, lon)', lat, lon);
-
     setFloatingTextVisible(false);
 
     // update stored device position (it is used for distance measuring)
     getCurrentDeviceLocation().then(pos => {
       if(pos){
-        console.log('pos', pos);
         setCurrentDeviceLocation({
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
@@ -343,8 +292,6 @@ const App = () => {
     // draw circle
     const radius = drawCircleToFitWidth(tapped_lat, tapped_lon);
 
-    console.log(`map tapped ${tapped_lat}, ${tapped_lon} radius: ${radius}`);
-
     // search cycleParking and collect the ids
     cycleParking.getCycleParksInRange(tapped_lat, tapped_lon, radius)
       .then((cycleParkObjects)=>{
@@ -353,7 +300,7 @@ const App = () => {
           return prev
         }, [])
         setSearchedCycleParkIds( ids )
-      }).catch(console.log);
+      }).catch(console.error);
 
     // centre camera here
     setCameraOver(tapped_lat, tapped_lon, 500);
@@ -366,7 +313,6 @@ const App = () => {
   const onPressHandler = async e => {
     const tapped_lat = e.nativeEvent.coordinate.latitude;
     const tapped_lon = e.nativeEvent.coordinate.longitude;
-
     searchMap(tapped_lat, tapped_lon);
   };
 
@@ -379,9 +325,6 @@ const App = () => {
         longitude: cyclepark_object.getLon(),
       },
       cyclepark: cyclepark_object,
-      // callout options, remove to disable
-      // title: cyclepark_object.getName(),
-      // description: `${cyclepark_object.getType()} (${cyclepark_object.getSpaces()} spaces) (${!cyclepark_object.isSecure() ? 'not ' : ''}secure)`
     };
   };
 
@@ -398,19 +341,14 @@ const App = () => {
   const putCycleParkMarkersOnMap = (cycleparks, are_bookmarks = false) => {
     const new_markers = [];
     cycleparks.forEach(cyclepark => {
-      // skip any that exist in the bookmarks
-      if (bookmarkedCycleParkIds.includes(cyclepark.getId())){
-        console.log(`Skipping ${cyclepark.getId()} as it exists in bookmarkedCycleParkIds`);
-        return;
-      } 
-      new_markers.push(formatMarkerFromCyclePark(cyclepark));
+      // only add ones not already in bookmarks
+      if(!bookmarkedCycleParkIds.includes(cyclepark.getId())){
+        new_markers.push(formatMarkerFromCyclePark(cyclepark));
+      }
+     
     });
     setSearchedMarkers(new_markers);
   };
-
-  // const getAllMarkers = () => {
-  //   return markers;
-  // }
 
   /**
    *
@@ -438,10 +376,6 @@ const App = () => {
       return newState;
     });
     return new_radius;
-  };
-
-  const toggleInfoPane = e => {
-    setDisplayInfo(!displayInfo);
   };
 
   const onMarkerPress = (comp, e) => {

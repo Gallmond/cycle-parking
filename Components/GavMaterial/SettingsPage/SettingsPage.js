@@ -8,8 +8,6 @@ import {
   Alert,
   PermissionsAndroid,
 } from 'react-native';
-import ExportHelper from '../../../GavClasses/ExportHelper';
-import FileHelper from '../../../GavClasses/FileHelper';
 import themes from '../../../Theme';
 import userSettings from '../../../UserSettings';
 
@@ -47,15 +45,9 @@ class SettingsPage extends Component {
   }
 
   async locationPermissionButtonPressed() {
-    console.log('SettingsPage.locationPermissionButtonPressed()');
     PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     ).then(status => {
-      console.log(
-        'PermissionsAndroid.RESULTS.GRANTED',
-        status,
-        PermissionsAndroid.RESULTS.GRANTED,
-      );
       userSettings.set(
         'canAccessDeviceLocation',
         status === PermissionsAndroid.RESULTS.GRANTED,
@@ -71,134 +63,12 @@ class SettingsPage extends Component {
     });
   }
 
-
-  async testRequest(){
-    console.log('===== testRequest =====')
-    const exportHelper = new ExportHelper()
-    
-    // check what stored raw exports we have
-    const storedExports = await exportHelper.getStoredExports()
-    console.log('storeExports', storedExports);
-    if(storedExports.length === 0){
-      exportHelper.downloadCycleParkExportToday()
-    }
-
-
-    
-
-
-  }
-
-  async testFileWrite(){
-
-    console.log('===== testFileWrite =====')
-
-    const now = new Date().toUTCString()
-
-    const testFileContent = `the time is ${now} so cool!`
-    const testFileName = 'testFileNameTwo.txt'
-    const testDirectory = '/testdir'
-    const testFilePath = `${testDirectory}/${testFileName}`
-
-    const fileHelper = new FileHelper()
-
-    // does the dir exists?
-    console.log(`does ${testDirectory} exist?`)
-    const dirExists = await fileHelper.exists( testDirectory )
-    console.log(`dir ${testDirectory} ${dirExists ? 'does' : 'does not'} exist`)
-
-    if(!dirExists){
-      console.log('creating dir')
-      const dirCreated = await fileHelper.mkDir( testDirectory )
-      dirCreated
-        ? console.log('created dir')
-        : console.log('maybe created dir')
-    }
-
-    // write the file
-    console.log('attempt to create file')
-    const created = await fileHelper.writeFile( testFilePath, testFileContent )
-    created
-      ? console.log('created file')
-      : console.log('maybe created file')
-
-    // attempt to read the file
-    console.log('attempt to read file')
-    const fileContent = await fileHelper.readFile( testFilePath )
-    fileContent
-      ? console.log('fileContent', fileContent)
-      : console.log('no file content found!')
-
-    const tempPrintItems = async ( items, indentLevel = 0 )=>{
-      items.forEach(async (item) =>{
-        let type = ''
-        item.isDirectory() && (type += 'd')
-        item.isFile() && (type += 'f')
-
-        let indents = Array(indentLevel)
-        indents.fill('\t')
-
-        let name = item.name
-        console.log(`${indents.join('')}${type}: ${name}`)
-
-        if(type === 'd'){
-          indentLevel++
-          let innerItems = await fileHelper.readDir( `/${name}` )
-          tempPrintItems(innerItems, indentLevel )
-        }
-
-      })
-    }
-
-    // list all items
-    const allItems = await fileHelper.readDir()
-    tempPrintItems(allItems)
-
-  }
-
-
-  updateTFLDataButtonPressed() {
-    console.log('SettingsPage.updateTFLDataButtonPressed()');
-
-    const promptText = {
-      title: 'Update TFL Data',
-      desc: 'Are you sure you want to update TFL data? This will use a lot of data (approx 80mb) and add approx 6mb to local storage',
-    };
-
-    Alert.alert(promptText.title, promptText.desc, [
-      {
-        text: 'Update',
-        onPress: () => {
-          console.log('UPDATE DATA HERE');
-          // this.testFileWrite()
-          this.testRequest()
-        },
-      },
-      {
-        text: 'Cancel',
-        onPress: () => {
-          console.log('do nothing');
-        },
-        style: 'cancel',
-      },
-    ]);
-
-    // use hardcoded data file by default
-    // test reading from file storage
-    // download and format file and put in file storage
-    // use this file as the main tfl data file if it exists, else use default
-  }
-
   async clearBookmarksButtonPressed() {
-    console.log('SettingsPage.clearBookmarksButtonPressed()');
-
     const bookMarksArray = await userSettings.get('bookmarks');
-
     if (bookMarksArray.length < 1) {
       Alert.alert('You have no bookmarks');
       return;
     }
-
     Alert.alert(
       'Clear Bookmarks?',
       `Really delete ${bookMarksArray.length} bookmarks? This can't be undone.`,
@@ -361,40 +231,6 @@ class SettingsPage extends Component {
               title="Prompt"
               color={themes.main.primary}
               accessibilityLabel="Grant location permissions"
-            />
-          </View>
-        </View>
-
-        {/* update TFL data */}
-        <View
-          style={{
-            width: '100%',
-            height: 100,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 20,
-          }}>
-          <Text
-            style={{
-              color: themes.main.text.onSecondary,
-              fontSize: 17,
-              fontWeight: 'bold',
-              textAlignVertical: 'center',
-            }}>
-            Update TFL Data
-          </Text>
-          <View
-            style={{
-              width: 150,
-            }}>
-            <Button
-              onPress={() => {
-                this.updateTFLDataButtonPressed();
-              }}
-              title="Update"
-              color={themes.main.primary}
-              accessibilityLabel="Update TFL Data"
             />
           </View>
         </View>

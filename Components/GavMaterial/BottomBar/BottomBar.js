@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, StyleSheet, Text, Image, TouchableOpacity, YellowBox } from "react-native";
+import { View, StyleSheet } from "react-native";
 import themes from "../../../Theme";
 import MenuButton from "./MenuButton";
 import SettingsButton from "./SettingsButton";
@@ -58,5 +58,3 @@ class BottomBar extends Component {
 }
 
 export default BottomBar;
-
-
