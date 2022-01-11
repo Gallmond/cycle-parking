@@ -156,7 +156,7 @@ const App = () => {
     cycleParking
         .getCycleParksById(searchedCycleParkIds)
         .then(putCycleParkMarkersOnMap)
-        .catch(console.log);
+        .catch(console.error);
   }, [searchedCycleParkIds])
 
   // when bookmarkedCycleParkIds is updated, re-render the pins
@@ -164,7 +164,7 @@ const App = () => {
     cycleParking
         .getCycleParksById(bookmarkedCycleParkIds)
         .then(putBookmarkMarkersOnMap)
-        .catch(console.log);
+        .catch(console.error);
   }, [bookmarkedCycleParkIds])
 
   // if a component in the tree has changed the bookmarks, this function should be called
@@ -384,19 +384,16 @@ const App = () => {
   };
 
   const toggleSettingsPage = () => {
-    console.log('toggleSettingsPage()');
     closeAllViews();
     setSettingsPageVisible(!settingsPageVisible);
   };
 
   const toggleListView = () => {
-    console.log('Toggle List View!!!');
     closeAllViews();
     setListViewVisible(!listViewVisible);
   };
 
   const searchAtCurrentCameraPosition = async () => {
-    console.log('searchAtCurrentCameraPosition()');
     const currentCamera = await mapRef.current.getCamera();
     const lat = currentCamera.center.latitude;
     const lon = currentCamera.center.longitude;
@@ -407,7 +404,6 @@ const App = () => {
    * set all views not visible
    */
   const closeAllViews = () => {
-    console.log('closeAllViews()');
     setSettingsPageVisible(false);
     setListViewVisible(false);
   };
@@ -461,9 +457,7 @@ const App = () => {
                 setCurrentDeviceLocation(thisPosition)
                 setCameraOver(thisPosition.lat, thisPosition.lon,500,);
               })
-              .catch(err => {
-                console.log('getCurrentDeviceLocation rejected', err);
-              });
+              .catch(console.error);
           }}
           style={{
             height: '10%',
@@ -490,7 +484,6 @@ const App = () => {
           <InformationBar
             selectedMarker={selectedMarker}
             onShowPhotos={imagesArray => {
-              console.log('imagesArray', imagesArray);
               setImageOverlay({
                 // imagesArray is an array of urls to images
                 visible: !imageOverlay.visible,

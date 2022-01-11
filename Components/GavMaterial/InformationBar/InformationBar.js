@@ -30,7 +30,6 @@ class InformationBar extends Component {
 
       // get user settings
       userSettings.get('alwaysShowImages').then(alwaysShowImages => {
-        console.log(' userSettings alwaysShowImages', alwaysShowImages);
 
         if (!alwaysShowImages) {
           Alert.alert(
@@ -61,7 +60,7 @@ class InformationBar extends Component {
               },
               {
                 text: 'Cancel',
-                onPress: () => console.log('Cancel Pressed'),
+                onPress: () => {},
                 style: 'cancel',
               },
             ],

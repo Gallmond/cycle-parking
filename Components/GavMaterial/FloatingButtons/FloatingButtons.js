@@ -61,13 +61,11 @@ class FloatingButtons extends Component {
       ? 1
       : 0.3
     return this.getButton(image_bookmark, ()=>{
-      console.log('Bookmark button pressed')
       this.toggleBookmarkForCurrentCyclePark()
     },opacity)
   }
   navButton(){
     return this.getButton(image_nav_arrow, ()=>{
-      console.log('Nav button pressed')
       this.openGoogleMapsWithDirections()
     })
   }
