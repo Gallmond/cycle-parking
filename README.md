@@ -9,10 +9,22 @@ A React Native app for finding cycle stands in London.
 - Open google maps and generate a route in cycling mode between your location and a stand.
 
 # Demo
-<video height=500 controls>
-  <source src="./emulator-demo.mp4">
-  Readme cannot display video. Find it [here](./emulator-demo.mp4)
-</video>
+<div style="display:flex">
+  <div style="display:flex; flex: 1">
+    <img src="./emulator-screenshot.png" height=500 />
+  </div>
+  <div style="display:flex; flex: 1; flex-direction: column">
+  <div style="display:flex">
+    <video height=500 controls>
+    <source src="./emulator-demo.mp4">
+    Readme cannot display video. Find it <a href="./emulator-demo.mp4">Here</a>
+  </video><br>
+  </div>
+  <div style="display:flex">
+    Watch on streamable <a href="https://streamable.com/srgli1">Here</a>
+  </div>
+  </div>
+</div>
 
 # Why
 Dipping my toes into React Native. 
