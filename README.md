@@ -39,3 +39,10 @@ I spent too long trying to implement online functionality for automatically upda
 - react-native & react-native-maps.
 - TFL Place API.
 - Geohashing.
+
+# Note
+react-native-maps requires a Google API key to run on android.
+
+The key can beset on `com.google.android.geo.API_KEY` in `android\app\src\main\AndroidManifest.xml`.
+
+The current key in the file has been deactivated.
